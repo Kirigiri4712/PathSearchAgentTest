@@ -15,8 +15,7 @@ public class AgentSingleton : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         instance = this;
-
+        DontDestroyOnLoad(gameObject);
     }
 }

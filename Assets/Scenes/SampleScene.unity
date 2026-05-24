@@ -196,12 +196,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1309292854109177915, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
-      propertyPath: 'm_BrainParameters.VectorActionSize.Array.data[0]'
+      propertyPath: m_BrainParameters.VectorObservationSize
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1309292854109177915, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
+      propertyPath: 'm_BrainParameters.VectorActionSize.Array.data[0]'
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1309292854109177915, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: 'm_BrainParameters.m_ActionSpec.BranchSizes.Array.data[0]'
-      value: 2
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 4177674302739753958, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: DecisionPeriod
@@ -209,7 +213,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: moveSpeed
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: rotateSpeed
@@ -217,15 +221,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: stepPenalty
-      value: -0.0005
+      value: -0.0002
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: wallPenalty
-      value: -0.005
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: exploreReward
-      value: 0.02
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: rotatePenalty
@@ -233,11 +237,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: visitedCellSize
-      value: 2
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
+      propertyPath: forwardOpenBonus
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: goalVisibleReward
-      value: 1
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
+      propertyPath: forwardWallPenalty
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: goalDistanceReward
@@ -245,7 +257,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8726866242315759480, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
       propertyPath: exploreRewardAfterGoalVisible
-      value: 0.005
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -595,14 +607,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c95c1071ef49e474b8f57450edae78a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapGenerator
-  width: 20
-  height: 20
+  width: 10
+  height: 10
   floorPrefab: {fileID: 8418485501529855149, guid: 39b84a08c62095245a660b609271f00b, type: 3}
   wallPrefab: {fileID: 4158837368707686914, guid: bec66acda4de7a842813b81e440a6884, type: 3}
   playerPrefab: {fileID: 675655544185319631, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
   goalPrefab: {fileID: 5938477663155409840, guid: dbadc4d1880853140983b7a0cc8ae088, type: 3}
-  waypointCount: 4
-  randomSeed: 0
+  waypointCount: 0
+  Seed: 1
 --- !u!4 &1814092745
 Transform:
   m_ObjectHideFlags: 0

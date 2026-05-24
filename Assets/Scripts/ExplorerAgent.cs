@@ -1,118 +1,86 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
 
-/// <summary>
-/// 未知マップ探索用Agent
-/// ・RayPerceptionSensor3D前提
-/// ・内部マップ情報へアクセスしない
-/// ・Physicsベース
-/// ・探索重視
-/// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public class ExplorerAgent : Agent
 {
     [Header("Movement")]
-    public float moveSpeed = 3f;
-    public float rotateSpeed = 180f;
+    public float moveSpeed = 4f;           // 前後移動の速度
+    public float rotateSpeed = 180f;       // 回転速度 (度/秒)
 
     [Header("Rewards")]
-    public float stepPenalty = -0.0005f;
-    public float goalReward = 10f;
-    public float goalVisibleReward = 0.2f;
+    public float stepPenalty = -0.0005f;   // ステップごとのペナルティ
+    public float goalReward = 10f;         // ゴール到達報酬
+    public float goalVisibleReward = 0.2f; // ゴール視認報酬（縮小）
+    // goalDistanceRewardは削除
 
-    [Header("ActionRewards")]
-    public float exploreReward = 0.02f;
-    public float exploreRewardAfterGoalVisible = 0.01f;
-    public float wallPenalty = -0.01f;
-    public float rotatePenalty = -0.001f;
+    [Header("Action Rewards")]
+    public float exploreReward = 0.02f;                // 新規セル到達報酬
+    public float exploreRewardAfterGoalVisible = 0.005f; // ゴール視認後の新規セル報酬
+    public float forwardOpenBonus = 0.005f;            // 前方開放ボーナス
+    public float forwardWallPenalty = -0.005f;         // 前方壁ペナルティ
+    public float wallPenalty = -0.01f;                 // 壁衝突ペナルティ
+    public float rotatePenalty = 0f;                   // 回転行動ペナルティ（必要なら小さく設定可）
 
     [Header("Exploration")]
-    public float visitedCellSize = 2f;
+    public float visitedCellSize = 2.5f; // 探索報酬対象セルサイズ（大きめにしてノイズ軽減）
 
     [Header("Vision")]
     public float visionDistance = 15f;
-    public float visionAngle = 60f;
+    public float visionAngle = 90f;
 
+    private Rigidbody rb;
+    private HashSet<Vector2Int> visitedCells = new HashSet<Vector2Int>();
     private bool foundGoal = false;
-
+    private bool canGoal = false;
     private int stepCount;
     public int maxStep = 5000;
 
-    private Rigidbody rb;
-
-    // 探索済み位置
-    private HashSet<Vector2Int> visitedCells =
-        new HashSet<Vector2Int>();
-
-    // スタック防止
-    private Vector3 lastPosition;
-    private float stuckTimer;
-
-    private bool canGoal = false;
-
-    private MapGenerator mapGenerator;
-
-    private void Awake()
+    // ゲーム開始時に呼ばれる
+    void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        // 転倒防止: X,Z軸回転を固定
+        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        // 移動安定用に線形ドラグを設定
+        rb.linearDamping = 1.0f;
     }
 
-    private void Update()
+    void Update()
     {
-        if (mapGenerator == null) mapGenerator = AgentSingleton.instance.mapGenerator;
+        // フォールオフ判定：床下に落ちたら大きなペナルティで終了
         if (transform.position.y < -10f)
         {
-            AddReward(-10000f);
+            AddReward(-1f);
             EndThisEpisode();
         }
     }
+
     /// <summary>
-    /// ゴール視認判定
+    /// ゴール視認判定：ゴールタグがレイに映ると報酬
     /// </summary>
     private void CheckGoalVisible()
     {
-        if (foundGoal)
-            return;
+        if (foundGoal) return;
 
-        Collider[] hits =
-            Physics.OverlapSphere(
-                transform.position,
-                visionDistance);
-
+        Collider[] hits = Physics.OverlapSphere(transform.position, visionDistance);
         foreach (Collider hit in hits)
         {
-            if (!hit.CompareTag("Goal"))
-                continue;
-
-            Vector3 dir =
-                (hit.transform.position - transform.position)
-                .normalized;
-
-            float angle =
-                Vector3.Angle(transform.forward, dir);
-
-            // 視野角内か
-            if (angle > visionAngle * 0.5f)
-                continue;
-
-            // 壁遮蔽チェック
-            if (Physics.Raycast(
-                transform.position + Vector3.up * 0.5f,
-                dir,
-                out RaycastHit rayHit,
-                visionDistance))
+            if (!hit.CompareTag("Goal")) continue;
+            Vector3 dir = (hit.transform.position - transform.position).normalized;
+            float angle = Vector3.Angle(transform.forward, dir);
+            if (angle > visionAngle * 0.5f) continue;
+            // 壁で遮られていないか確認
+            if (Physics.Raycast(transform.position + Vector3.up * 0.5f, dir, out RaycastHit rayHit, visionDistance))
             {
                 if (rayHit.collider.CompareTag("Goal"))
                 {
                     foundGoal = true;
-
                     AddReward(goalVisibleReward);
-
                     Debug.Log("Goal Found!");
                 }
             }
@@ -121,180 +89,121 @@ public class ExplorerAgent : Agent
 
     public override void OnEpisodeBegin()
     {
+        // ゴール到達可能になるまで遅延を挿入
         canGoal = false;
         StartCoroutine(InstantGoalLimit());
-        mapGenerator?.Generate();
 
+        // マップ再生成（Environmentリセット）
+        MapGenerator mapGen = AgentSingleton.instance.mapGenerator;
+        if (mapGen != null) mapGen.Generate();
+
+        // 物理量リセット
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        transform.position = AgentSingleton.instance.SpawnPos + Vector3.up * 0.5f;
-
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
-
+        // エージェント位置・回転設定
+        Vector3 spawn = AgentSingleton.instance.SpawnPos;
+        transform.position = spawn + Vector3.up * 0.5f;
         transform.rotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
 
+        // 探索セル履歴初期化
         visitedCells.Clear();
-
-        stuckTimer = 0f;
-
-        stepCount = 0;
-
-        lastPosition = transform.position;
-
         RegisterVisited(transform.position);
+
+        // ループ用変数リセット
+        stepCount = 0;
+        foundGoal = false;
+        lastPosition = transform.position;
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // 速度（ローカル）
-        Vector3 localVelocity =
-            transform.InverseTransformDirection(rb.linearVelocity);
-
-        sensor.AddObservation(localVelocity.x);
-        sensor.AddObservation(localVelocity.z);
-
-        // 前方方向
-        sensor.AddObservation(transform.forward.x);
-        sensor.AddObservation(transform.forward.z);
+        // ローカル座標系での速度 (x, z)
+        Vector3 localVel = transform.InverseTransformDirection(rb.linearVelocity);
+        sensor.AddObservation(localVel.x);
+        sensor.AddObservation(localVel.z);
+        // (必要なら向き情報等を追加)
     }
 
-    public override void OnActionReceived(
-        ActionBuffers actions)
+    public override void OnActionReceived(ActionBuffers actions)
     {
         int moveAction = actions.DiscreteActions[0];
-        int rotateAction = actions.DiscreteActions[1];
+        //int rotateAction = actions.DiscreteActions[1];
 
-        // ====================
-        // 回転
-        // ====================
+        //// 1) 回転処理
+        //float rotate = 0f;
+        //if (rotateAction == 1) rotate = -1f;
+        //else if (rotateAction == 2) rotate = +1f;
+        //Quaternion deltaRot = Quaternion.Euler(0f, rotate * rotateSpeed * Time.fixedDeltaTime, 0f);
+        //rb.MoveRotation(rb.rotation * deltaRot);
+        //if (rotateAction != 0) AddReward(rotatePenalty);
 
-        float rotate = 0f;
-
-        switch (rotateAction)
-        {
-            case 1:
-                rotate = -1f;
-                break;
-
-            case 2:
-                rotate = 1f;
-                break;
-        }
-
-        Quaternion deltaRotation = Quaternion.Euler(0f, rotate * rotateSpeed * Time.fixedDeltaTime, 0f);
-
-        rb.MoveRotation(rb.rotation * deltaRotation);
-        if (rotateAction != 0) AddReward(rotatePenalty);
-
-        // ====================
-        // 移動
-        // ====================
-
-        Vector3 move = Vector3.zero;
-
+        // 2) 移動処理
+        Vector3 moveDir = Vector3.zero;
         switch (moveAction)
         {
-            case 1:
-                move = transform.forward;
-                break;
-            case 2:
-                move = -transform.forward;
-                break;
+            case 1: moveDir = Vector3.forward; break;
+            case 2: moveDir = Vector3.back; break;
+            case 3: moveDir = Vector3.right; break;
+            case 4: moveDir = Vector3.left; break;
+            default: break;
         }
-
-        Vector3 targetVelocity = move * moveSpeed;
-
-        Vector3 velocityChange = targetVelocity - new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-
-        rb.AddForce(velocityChange, ForceMode.VelocityChange);
-
-        if (Physics.Raycast(transform.position + Vector3.up * 0.5f, transform.forward, 1.0f))
+        if (moveDir != Vector3.zero)
         {
-            AddReward(-0.001f);
-        }
-        if (!Physics.Raycast(transform.position + Vector3.up * 0.5f, transform.forward, 2.0f))
-        {
-            AddReward(0.001f);
+            // ローカル座標で前後に力を加える（Accelarationモード）
+            rb.AddRelativeForce(moveDir * moveSpeed, ForceMode.VelocityChange);
+            transform.forward = moveDir;
         }
 
-            // ====================
-            // 常時ペナルティ
-            // ====================
+        // 3) 常時ステップペナルティ
+        AddReward(stepPenalty);
 
-            AddReward(stepPenalty);
-
-        // ====================
-        // 新規探索報酬
-        // ====================
-
+        // 4) 新規セル探索報酬
         Vector2Int cell = WorldToCell(transform.position);
-
         if (!visitedCells.Contains(cell))
         {
             visitedCells.Add(cell);
-
             AddReward(foundGoal ? exploreRewardAfterGoalVisible : exploreReward);
         }
 
-        // ====================
-        // スタック検知
-        // ====================
+        // 5) 前方壁/通路ボーナス
+        Vector3 rayStart = transform.position + Vector3.up * 0.5f;
+        Vector3 rayDir = transform.forward;
+        float checkDist = 2f;
+        bool hitWall = Physics.Raycast(rayStart, rayDir, out RaycastHit hit, checkDist);
+        // レイ可視化（デバッグ用）
+        Debug.DrawRay(rayStart, rayDir * checkDist, hitWall ? Color.red : Color.green);
+        if (hitWall)
+        {
+            AddReward(forwardWallPenalty);
+        }
+        else
+        {
+            AddReward(forwardOpenBonus);
+        }
 
-        //float moved =
-        //    Vector3.Distance(
-        //        transform.position,
-        //        lastPosition);
-
-        //if (moved < 0.05f)
-        //{
-        //    stuckTimer += Time.fixedDeltaTime;
-
-        //    if (stuckTimer > 3f)
-        //    {
-        //        AddReward(-1f);
-        //        EndThisEpisode();
-        //    }
-        //}
-        //else
-        //{
-        //    stuckTimer = 0f;
-        //}
-
+        // 6) ゴール視認判定
         CheckGoalVisible();
 
-        lastPosition = transform.position;
-
         stepCount++;
-
+        // 最大ステップ到達でエピソード終了（失敗扱い、報酬追加なし）
         if (stepCount >= maxStep)
         {
-            AddReward(-1f);
             EndThisEpisode();
         }
     }
 
-    public override void Heuristic(
-        in ActionBuffers actionsOut)
+    public override void Heuristic(in ActionBuffers actionsOut)
     {
-        var discrete = actionsOut.DiscreteActions;
-
-        // Move
-        if (Input.GetKey(KeyCode.W))
-            discrete[0] = 1;
-        else if (Input.GetKey(KeyCode.S))
-            discrete[0] = 2;
-        else
-            discrete[0] = 0;
-
-        // Rotate
-        if (Input.GetKey(KeyCode.A))
-            discrete[1] = 1;
-        else if (Input.GetKey(KeyCode.D))
-            discrete[1] = 2;
-        else
-            discrete[1] = 0;
+        var d = actionsOut.DiscreteActions;
+        // W/S で前後
+        if (Input.GetKey(KeyCode.W)) d[0] = 1;
+        else if (Input.GetKey(KeyCode.S)) d[0] = 2;
+        else d[0] = 0;
+        // A/D で左右回転
+        if (Input.GetKey(KeyCode.A)) d[1] = 1;
+        else if (Input.GetKey(KeyCode.D)) d[1] = 2;
+        else d[1] = 0;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -311,9 +220,25 @@ public class ExplorerAgent : Agent
         if (other.CompareTag("Goal"))
         {
             AddReward(goalReward);
-            Debug.Log("Goal!" + other.GetHashCode());
+            Debug.Log("Goal! Episode reward: " + GetCumulativeReward());
             EndThisEpisode();
         }
+    }
+
+    private Vector3 lastPosition;
+    // ゴール到達許可遅延コルーチン
+    private IEnumerator InstantGoalLimit()
+    {
+        canGoal = false;
+        yield return new WaitForSeconds(1);
+        canGoal = true;
+    }
+
+    private void EndThisEpisode()
+    {
+        // エピソード終了
+        Debug.Log(GetCumulativeReward());
+        EndEpisode();
     }
 
     private void RegisterVisited(Vector3 pos)
@@ -327,20 +252,19 @@ public class ExplorerAgent : Agent
             Mathf.FloorToInt(pos.x / visitedCellSize),
             Mathf.FloorToInt(pos.z / visitedCellSize)
         );
-    
     }
 
-    private IEnumerator InstantGoalLimit()
+    // デバッグ：訪問セルを描画（エディタ画面で可視化）
+    private void OnDrawGizmos()
     {
-        canGoal = false;
-        yield return new WaitForSeconds(1);
-        canGoal = true;
-    }
-
-    private void EndThisEpisode()
-    {
-        transform.position = Vector3.up * 10f;
-        Debug.Log(GetCumulativeReward());
-        EndEpisode();
+        if (visitedCells == null) return;
+        Gizmos.color = Color.blue;
+        foreach (Vector2Int cell in visitedCells)
+        {
+            float x = cell.x * visitedCellSize + visitedCellSize * 0.5f;
+            float z = cell.y * visitedCellSize + visitedCellSize * 0.5f;
+            Vector3 center = new Vector3(x, 0.01f, z);
+            Gizmos.DrawCube(center, new Vector3(visitedCellSize, 0.02f, visitedCellSize));
+        }
     }
 }

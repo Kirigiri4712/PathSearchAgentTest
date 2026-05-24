@@ -26,7 +26,7 @@ public class MapGenerator : MonoBehaviour
 
     [Header("Generation")]
     public int waypointCount = 4;
-    public int randomSeed = 0;
+    [Tooltip("0以外の値が代入されたとき、固定のシード値を使用します。")] public int Seed = 0;
 
     private bool[,] walkable;
 
@@ -56,8 +56,8 @@ public class MapGenerator : MonoBehaviour
 
         mapRoot = new GameObject("MapRoot").transform;
 
-        if (randomSeed != 0)
-            UnityEngine.Random.InitState(randomSeed);
+        if (Seed != 0)
+            UnityEngine.Random.InitState(Seed);
 
         walkable = new bool[width, height];
 
