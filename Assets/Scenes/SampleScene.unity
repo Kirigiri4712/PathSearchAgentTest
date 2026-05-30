@@ -523,8 +523,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c95c1071ef49e474b8f57450edae78a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapGenerator
-  width: 10
-  height: 10
+  width: 5
+  height: 5
   floorPrefab: {fileID: 8418485501529855149, guid: 39b84a08c62095245a660b609271f00b, type: 3}
   wallPrefab: {fileID: 4158837368707686914, guid: bec66acda4de7a842813b81e440a6884, type: 3}
   playerPrefab: {fileID: 675655544185319631, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
@@ -785,6 +785,7 @@ MonoBehaviour:
   stepPenalty: -0.0002
   goalReward: 10
   goalVisibleReward: 0.5
+  goalDistanceRewardMultiplier: 0.005
   exploreReward: 0.0001
   exploreRewardAfterGoalVisible: 0
   forwardOpenBonus: 0

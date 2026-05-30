@@ -70,6 +70,9 @@
     <Compile Include="Assets\Scripts\ExplorerAgent.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\docs\Win手順.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\6000.3.9f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
       <Private>False</Private>

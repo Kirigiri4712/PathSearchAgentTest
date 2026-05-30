@@ -17,8 +17,7 @@ public class ExplorerAgent : Agent
     public float stepPenalty = -0.0005f;   // ステップごとのペナルティ
     public float goalReward = 10f;         // ゴール到達報酬
     public float goalVisibleReward = 0.2f; // ゴール視認報酬（縮小）
-    // goalDistanceRewardは削除
-
+    public float goalDistanceRewardMultiplier = 0.0001f; //ゴール視認後のゴール距離報酬
     [Header("Action Rewards")]
     public float exploreReward = 0.02f;                // 新規セル到達報酬
     public float exploreRewardAfterGoalVisible = 0.005f; // ゴール視認後の新規セル報酬
@@ -191,7 +190,15 @@ public class ExplorerAgent : Agent
         // 最大ステップ到達でエピソード終了（失敗扱い、報酬追加なし）
         if (stepCount >= maxStep)
         {
-            EndThisEpisode();
+            if (foundGoal)
+            {
+                var ins = AgentSingleton.instance;
+                if (ins != null)
+                {
+                    AddReward((Vector3.Distance(ins.SpawnPos, ins.GoalPos) - Vector3.Distance(transform.position, ins.GoalPos)) * goalDistanceRewardMultiplier);
+                }
+                EndThisEpisode();
+            }
         }
     }
 
