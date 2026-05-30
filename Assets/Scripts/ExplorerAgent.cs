@@ -41,20 +41,27 @@ public class ExplorerAgent : Agent
     private int stepCount;
     public int maxStep = 5000;
 
-    private InputAction moveAction;
+    private InputSystem_Actions inputActions;
+    private Vector2 moveInput;
 
     // ゲーム開始時に呼ばれる
     void Awake()
     {
-        moveAction = InputSystem.actions.FindAction("Move");
+        inputActions = new InputSystem_Actions();
+
+        inputActions.Player.Move.performed += ctx =>
+           moveInput = ctx.ReadValue<Vector2>();
+
+        inputActions.Player.Move.canceled += ctx =>
+            moveInput = Vector2.zero;
 
         //rb = GetComponent<Rigidbody>();
         //// 転倒防止: X,Z軸回転を固定
         //rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         //// 移動安定用に線形ドラグを設定
         //rb.linearDamping = 1.0f;
+        inputActions.Player.Enable(); //これやんないとinputSystemが動かん
     }
-
     void Update()
     {
         // フォールオフ判定：床下に落ちたら大きなペナルティで終了
@@ -132,21 +139,17 @@ public class ExplorerAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        int moveAction = actions.DiscreteActions[0];
+        float x = actions.ContinuousActions[0];
+        float z = actions.ContinuousActions[1];
 
-        Vector3 moveDir = Vector3.zero;
-        switch (moveAction)
+        Vector3 moveDir = new Vector3(x, 0f, z);
+
+        if (moveDir.sqrMagnitude > 0.001f)
         {
-            case 1: moveDir = Vector3.forward; break;
-            case 2: moveDir = Vector3.back; break;
-            case 3: moveDir = Vector3.right; break;
-            case 4: moveDir = Vector3.left; break;
-            default: break;
-        }
-        if (moveDir != Vector3.zero)
-        {
-            // ローカル座標で前後に力を加える（Accelarationモード）
+            moveDir.Normalize();
+
             parentRB.linearVelocity = moveDir * moveSpeed;
+
             transform.forward = moveDir;
         }
 
@@ -190,13 +193,11 @@ public class ExplorerAgent : Agent
 
     public override void Heuristic(in ActionBuffers actionsOut)
     {
-        var d = actionsOut.DiscreteActions;
-        // W/S で前後
-        if (Input.GetKey(KeyCode.W)) d[0] = 1;
-        else if (Input.GetKey(KeyCode.S)) d[0] = 2;
-        else if(Input.GetKey(KeyCode.D)) d[0] = 3;
-        else if (Input.GetKey(KeyCode.A)) d[0] = 4;
-        else d[0] = 0;
+        var c = actionsOut.ContinuousActions;
+
+        c[0] = moveInput.x; // A,D
+        c[1] = moveInput.y; // W,S
+        //Debug.Log(moveInput.x + " / " +  moveInput.y);
     }
 
     private void OnCollisionEnter(Collision collision)
