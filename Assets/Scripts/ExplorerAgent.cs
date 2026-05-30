@@ -148,9 +148,13 @@ public class ExplorerAgent : Agent
         {
             moveDir.Normalize();
 
-            parentRB.linearVelocity = moveDir * moveSpeed;
+            parentRB.MovePosition(parentRB.position + moveDir * moveSpeed * Time.fixedDeltaTime);
 
             transform.forward = moveDir;
+        }
+        else
+        {
+            parentRB.linearVelocity = Vector3.zero;
         }
 
         // 3) 常時ステップペナルティ
