@@ -4,13 +4,14 @@ using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Rigidbody))]
 public class ExplorerAgent : Agent
 {
+    [SerializeField] private Rigidbody parentRB;
+
     [Header("Movement")]
     public float moveSpeed = 4f;           // 前後移動の速度
-    public float rotateSpeed = 180f;       // 回転速度 (度/秒)
 
     [Header("Rewards")]
     public float stepPenalty = -0.0005f;   // ステップごとのペナルティ
@@ -33,21 +34,25 @@ public class ExplorerAgent : Agent
     public float visionDistance = 15f;
     public float visionAngle = 90f;
 
-    private Rigidbody rb;
+    //private Rigidbody rb;
     private HashSet<Vector2Int> visitedCells = new HashSet<Vector2Int>();
     private bool foundGoal = false;
     private bool canGoal = false;
     private int stepCount;
     public int maxStep = 5000;
 
+    private InputAction moveAction;
+
     // ゲーム開始時に呼ばれる
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        // 転倒防止: X,Z軸回転を固定
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-        // 移動安定用に線形ドラグを設定
-        rb.linearDamping = 1.0f;
+        moveAction = InputSystem.actions.FindAction("Move");
+
+        //rb = GetComponent<Rigidbody>();
+        //// 転倒防止: X,Z軸回転を固定
+        //rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        //// 移動安定用に線形ドラグを設定
+        //rb.linearDamping = 1.0f;
     }
 
     void Update()
@@ -98,8 +103,8 @@ public class ExplorerAgent : Agent
         if (mapGen != null) mapGen.Generate();
 
         // 物理量リセット
-        rb.linearVelocity = Vector3.zero;
-        rb.angularVelocity = Vector3.zero;
+        parentRB.linearVelocity = Vector3.zero;
+        parentRB.angularVelocity = Vector3.zero;
 
         // エージェント位置・回転設定
         Vector3 spawn = AgentSingleton.instance.SpawnPos;
@@ -119,7 +124,7 @@ public class ExplorerAgent : Agent
     public override void CollectObservations(VectorSensor sensor)
     {
         // ローカル座標系での速度 (x, z)
-        Vector3 localVel = transform.InverseTransformDirection(rb.linearVelocity);
+        Vector3 localVel = transform.InverseTransformDirection(parentRB.linearVelocity);
         sensor.AddObservation(localVel.x);
         sensor.AddObservation(localVel.z);
         // (必要なら向き情報等を追加)
@@ -128,17 +133,7 @@ public class ExplorerAgent : Agent
     public override void OnActionReceived(ActionBuffers actions)
     {
         int moveAction = actions.DiscreteActions[0];
-        //int rotateAction = actions.DiscreteActions[1];
 
-        //// 1) 回転処理
-        //float rotate = 0f;
-        //if (rotateAction == 1) rotate = -1f;
-        //else if (rotateAction == 2) rotate = +1f;
-        //Quaternion deltaRot = Quaternion.Euler(0f, rotate * rotateSpeed * Time.fixedDeltaTime, 0f);
-        //rb.MoveRotation(rb.rotation * deltaRot);
-        //if (rotateAction != 0) AddReward(rotatePenalty);
-
-        // 2) 移動処理
         Vector3 moveDir = Vector3.zero;
         switch (moveAction)
         {
@@ -151,7 +146,7 @@ public class ExplorerAgent : Agent
         if (moveDir != Vector3.zero)
         {
             // ローカル座標で前後に力を加える（Accelarationモード）
-            rb.AddRelativeForce(moveDir * moveSpeed, ForceMode.VelocityChange);
+            parentRB.linearVelocity = moveDir * moveSpeed;
             transform.forward = moveDir;
         }
 
@@ -199,11 +194,9 @@ public class ExplorerAgent : Agent
         // W/S で前後
         if (Input.GetKey(KeyCode.W)) d[0] = 1;
         else if (Input.GetKey(KeyCode.S)) d[0] = 2;
+        else if(Input.GetKey(KeyCode.D)) d[0] = 3;
+        else if (Input.GetKey(KeyCode.A)) d[0] = 4;
         else d[0] = 0;
-        // A/D で左右回転
-        if (Input.GetKey(KeyCode.A)) d[1] = 1;
-        else if (Input.GetKey(KeyCode.D)) d[1] = 2;
-        else d[1] = 0;
     }
 
     private void OnCollisionEnter(Collision collision)
