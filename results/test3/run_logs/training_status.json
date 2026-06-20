@@ -2,31 +2,22 @@
     "ExplorerAgent": {
         "checkpoints": [
             {
-                "steps": 195340,
-                "file_path": "results\\test3\\ExplorerAgent\\ExplorerAgent-195340.onnx",
-                "reward": null,
-                "creation_time": 1780163035.1527398,
+                "steps": 148198,
+                "file_path": "results\\test3\\ExplorerAgent\\ExplorerAgent-148198.onnx",
+                "reward": 4.508649894269183,
+                "creation_time": 1780203264.5874262,
                 "auxillary_file_paths": [
-                    "results\\test3\\ExplorerAgent\\ExplorerAgent-195340.pt"
-                ]
-            },
-            {
-                "steps": 237219,
-                "file_path": "results\\test3\\ExplorerAgent\\ExplorerAgent-237219.onnx",
-                "reward": null,
-                "creation_time": 1780163469.8463929,
-                "auxillary_file_paths": [
-                    "results\\test3\\ExplorerAgent\\ExplorerAgent-237219.pt"
+                    "results\\test3\\ExplorerAgent\\ExplorerAgent-148198.pt"
                 ]
             }
         ],
         "final_checkpoint": {
-            "steps": 237219,
+            "steps": 148198,
             "file_path": "results\\test3\\ExplorerAgent.onnx",
-            "reward": null,
-            "creation_time": 1780163469.8463929,
+            "reward": 4.508649894269183,
+            "creation_time": 1780203264.5874262,
             "auxillary_file_paths": [
-                "results\\test3\\ExplorerAgent\\ExplorerAgent-237219.pt"
+                "results\\test3\\ExplorerAgent\\ExplorerAgent-148198.pt"
             ]
         }
     },

@@ -674,7 +674,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.Policies.BehaviorParameters
   m_BrainParameters:
-    VectorObservationSize: 2
+    VectorObservationSize: 130
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 2
@@ -788,11 +788,11 @@ MonoBehaviour:
   goalDistanceRewardMultiplier: 0.005
   exploreReward: 0.0001
   exploreRewardAfterGoalVisible: 0
-  forwardOpenBonus: 0
-  forwardWallPenalty: 0
+  forwardOpenBonus: 0.0001
+  forwardWallPenalty: -0.0001
   wallPenalty: 0
   rotatePenalty: 0
-  visitedCellSize: 1.5
+  visitedCellSize: 1
   visionDistance: 10
   visionAngle: 70
   maxStep: 5000

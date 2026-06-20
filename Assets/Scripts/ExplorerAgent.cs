@@ -43,6 +43,26 @@ public class ExplorerAgent : Agent
     private InputSystem_Actions inputActions;
     private Vector2 moveInput;
 
+    private Transform goal;
+
+    //探索済みマップ
+    private enum MemoryCell
+    {
+        Unknown = 0,
+        Empty = 1,
+        Wall = 2
+    }
+    private Dictionary<Vector2Int, MemoryCell> memoryMap = new Dictionary<Vector2Int, MemoryCell>();
+
+
+
+    //デバッグ
+    private float actionXSum;
+    private float actionZSum;
+    private int actionSampleCount;
+    private float actionXAbsSum;
+    private float actionZAbsSum;
+
     // ゲーム開始時に呼ばれる
     void Awake()
     {
@@ -90,6 +110,7 @@ public class ExplorerAgent : Agent
             {
                 if (rayHit.collider.CompareTag("Goal"))
                 {
+                    goal = rayHit.collider.transform;
                     foundGoal = true;
                     AddReward(goalVisibleReward);
                     Debug.Log("Goal Found!");
@@ -119,6 +140,7 @@ public class ExplorerAgent : Agent
 
         // 探索セル履歴初期化
         visitedCells.Clear();
+        memoryMap.Clear();
         RegisterVisited(transform.position);
 
         // ループ用変数リセット
@@ -129,17 +151,66 @@ public class ExplorerAgent : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // ローカル座標系での速度 (x, z)
-        Vector3 localVel = transform.InverseTransformDirection(parentRB.linearVelocity);
-        sensor.AddObservation(localVel.x);
-        sensor.AddObservation(localVel.z);
-        // (必要なら向き情報等を追加)
+        // 向き
+        sensor.AddObservation(transform.forward.x);
+        sensor.AddObservation(transform.forward.z);
+
+        // 速度
+        Vector3 delta =transform.position - lastPosition;
+
+        sensor.AddObservation(delta.x);
+        sensor.AddObservation(delta.z);
+
+        // ゴール発見済みか
+        sensor.AddObservation(foundGoal ? 1f : 0f);
+
+        // ゴール発見後のみ方向を教える
+        if (foundGoal)
+        {
+            Vector3 dir =
+                transform.InverseTransformDirection(
+                    goal.position - transform.position);
+
+            dir.Normalize();
+
+            sensor.AddObservation(dir.x);
+            sensor.AddObservation(dir.z);
+
+            sensor.AddObservation(
+                Mathf.Clamp01(
+                    Vector3.Distance(
+                        transform.position,
+                        goal.position
+                    ) / 100f));
+        }
+        else
+        {
+            sensor.AddObservation(0f);
+            sensor.AddObservation(0f);
+            sensor.AddObservation(0f);
+        }
+
+        // 探索進捗
+        sensor.AddObservation(visitedCells.Count / 1000f);
+
+        AddMemoryObservation(sensor);
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
+        UpdateMemoryFromRaycasts();
+
         float x = actions.ContinuousActions[0];
         float z = actions.ContinuousActions[1];
+
+
+
+        actionXSum += x;
+        actionZSum += z;
+        actionSampleCount++;
+        actionXAbsSum += Mathf.Abs(x);
+        actionZAbsSum += Mathf.Abs(z);
+
 
         Vector3 moveDir = new Vector3(x, 0f, z);
 
@@ -186,19 +257,26 @@ public class ExplorerAgent : Agent
         // 6) ゴール視認判定
         CheckGoalVisible();
 
+        if (actionSampleCount >= 1000)
+        {
+            Debug.Log(
+                $"Avg X={actionXSum / actionSampleCount:F3} " +
+                $"Z={actionZSum / actionSampleCount:F3} " +
+                $"|X|={actionXAbsSum / actionSampleCount:F3} " +
+                $"|Z|={actionZAbsSum / actionSampleCount:F3}"
+            );
+
+            actionXSum = 0f;
+            actionZSum = 0f;
+            actionSampleCount = 0;
+        }
+
         stepCount++;
         // 最大ステップ到達でエピソード終了（失敗扱い、報酬追加なし）
         if (stepCount >= maxStep)
         {
-            if (foundGoal)
-            {
-                var ins = AgentSingleton.instance;
-                if (ins != null)
-                {
-                    AddReward((Vector3.Distance(ins.SpawnPos, ins.GoalPos) - Vector3.Distance(transform.position, ins.GoalPos)) * goalDistanceRewardMultiplier);
-                }
-                EndThisEpisode();
-            }
+            GoalDistanceRewardFoundedGoal();
+            EndThisEpisode();
         }
     }
 
@@ -209,6 +287,21 @@ public class ExplorerAgent : Agent
         c[0] = moveInput.x; // A,D
         c[1] = moveInput.y; // W,S
         //Debug.Log(moveInput.x + " / " +  moveInput.y);
+    }
+
+    /// <summary>
+    /// ゴールが見つかっている場合による距離報酬
+    /// </summary>
+    private void GoalDistanceRewardFoundedGoal()
+    {
+        if(foundGoal)
+        {
+            var ins = AgentSingleton.instance;
+            if (ins != null)
+            {
+                AddReward((Vector3.Distance(ins.SpawnPos, ins.GoalPos) - Vector3.Distance(transform.position, ins.GoalPos)) * goalDistanceRewardMultiplier);
+            }
+        }
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -248,7 +341,11 @@ public class ExplorerAgent : Agent
 
     private void RegisterVisited(Vector3 pos)
     {
-        visitedCells.Add(WorldToCell(pos));
+        Vector2Int cell = WorldToCell(pos);
+
+        visitedCells.Add(cell);
+
+        memoryMap[cell] = MemoryCell.Empty;
     }
 
     private Vector2Int WorldToCell(Vector3 pos)
@@ -257,6 +354,82 @@ public class ExplorerAgent : Agent
             Mathf.FloorToInt(pos.x / visitedCellSize),
             Mathf.FloorToInt(pos.z / visitedCellSize)
         );
+    }
+
+    private void UpdateMemoryFromRaycasts()
+    {
+        float rayLength = 15f;
+
+        Vector3[] directions =
+        {
+        transform.forward,
+        (transform.forward + transform.right).normalized,
+        transform.right,
+        (-transform.forward + transform.right).normalized,
+        -transform.forward,
+        (-transform.forward - transform.right).normalized,
+        -transform.right,
+        (transform.forward - transform.right).normalized
+    };
+
+        Vector3 start = transform.position + Vector3.up * 0.5f;
+
+        foreach (var dir in directions)
+        {
+            if (Physics.Raycast(start, dir, out RaycastHit hit, rayLength))
+            {
+                if (hit.collider.CompareTag("Wall"))
+                {
+                    Vector2Int wallCell =
+                        WorldToCell(hit.point);
+
+                    memoryMap[wallCell] =
+                        MemoryCell.Wall;
+                }
+            }
+        }
+    }
+
+    private void AddMemoryObservation(
+    VectorSensor sensor,
+    int radius = 5)
+    {
+        Vector2Int center =
+            WorldToCell(transform.position);
+
+        for (int z = -radius; z <= radius; z++)
+        {
+            for (int x = -radius; x <= radius; x++)
+            {
+                Vector2Int cell =
+                    new Vector2Int(
+                        center.x + x,
+                        center.y + z);
+
+                if (!memoryMap.TryGetValue(
+                        cell,
+                        out MemoryCell state))
+                {
+                    sensor.AddObservation(-1f);
+                    continue;
+                }
+
+                switch (state)
+                {
+                    case MemoryCell.Empty:
+                        sensor.AddObservation(0f);
+                        break;
+
+                    case MemoryCell.Wall:
+                        sensor.AddObservation(1f);
+                        break;
+
+                    default:
+                        sensor.AddObservation(-1f);
+                        break;
+                }
+            }
+        }
     }
 
     // デバッグ：訪問セルを描画（エディタ画面で可視化）
