@@ -328,7 +328,7 @@ public class ExplorerAgent : Agent
     private IEnumerator InstantGoalLimit()
     {
         canGoal = false;
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.5f);
         canGoal = true;
     }
 

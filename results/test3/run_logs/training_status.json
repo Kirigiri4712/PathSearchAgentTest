@@ -2,22 +2,40 @@
     "ExplorerAgent": {
         "checkpoints": [
             {
-                "steps": 148198,
-                "file_path": "results\\test3\\ExplorerAgent\\ExplorerAgent-148198.onnx",
-                "reward": 4.508649894269183,
-                "creation_time": 1780203264.5874262,
+                "steps": 499954,
+                "file_path": "results\\test3\\ExplorerAgent\\ExplorerAgent-499954.onnx",
+                "reward": -1.3812999031506479,
+                "creation_time": 1781977985.1610239,
                 "auxillary_file_paths": [
-                    "results\\test3\\ExplorerAgent\\ExplorerAgent-148198.pt"
+                    "results\\test3\\ExplorerAgent\\ExplorerAgent-499954.pt"
+                ]
+            },
+            {
+                "steps": 500018,
+                "file_path": "results\\test3\\ExplorerAgent\\ExplorerAgent-500018.onnx",
+                "reward": -1.3812999031506479,
+                "creation_time": 1781977986.3790054,
+                "auxillary_file_paths": [
+                    "results\\test3\\ExplorerAgent\\ExplorerAgent-500018.pt"
+                ]
+            },
+            {
+                "steps": 500018,
+                "file_path": "results\\test3\\ExplorerAgent\\ExplorerAgent-500018.onnx",
+                "reward": null,
+                "creation_time": 1782007171.6566062,
+                "auxillary_file_paths": [
+                    "results\\test3\\ExplorerAgent\\ExplorerAgent-500018.pt"
                 ]
             }
         ],
         "final_checkpoint": {
-            "steps": 148198,
+            "steps": 500018,
             "file_path": "results\\test3\\ExplorerAgent.onnx",
-            "reward": 4.508649894269183,
-            "creation_time": 1780203264.5874262,
+            "reward": null,
+            "creation_time": 1782007171.6566062,
             "auxillary_file_paths": [
-                "results\\test3\\ExplorerAgent\\ExplorerAgent-148198.pt"
+                "results\\test3\\ExplorerAgent\\ExplorerAgent-500018.pt"
             ]
         }
     },
