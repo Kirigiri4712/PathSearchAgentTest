@@ -14,24 +14,24 @@ public class ExplorerAgent : Agent
     public float moveSpeed = 4f;           // 前後移動の速度
 
     [Header("Rewards")]
-    public float stepPenalty = -0.0005f;   // ステップごとのペナルティ
-    public float goalReward = 10f;         // ゴール到達報酬
-    public float goalVisibleReward = 0.2f; // ゴール視認報酬（縮小）
-    public float goalDistanceRewardMultiplier = 0.0001f; //ゴール視認後のゴール距離報酬
+    [Tooltip("ステップごとのペナルティ")]public float stepPenalty = -0.0005f;   // ステップごとのペナルティ
+    [Tooltip("ゴール到達報酬")]public float goalReward = 10f;         // ゴール到達報酬
+    [Tooltip("ゴール視認報酬（縮小）")]public float goalVisibleReward = 0.2f; // ゴール視認報酬（縮小）
+    [Tooltip("ゴール視認後のゴール距離報酬")]public float goalDistanceRewardMultiplier = 0.0001f; //ゴール視認後のゴール距離報酬
     [Header("Action Rewards")]
-    public float exploreReward = 0.02f;                // 新規セル到達報酬
-    public float exploreRewardAfterGoalVisible = 0.005f; // ゴール視認後の新規セル報酬
-    public float forwardOpenBonus = 0.005f;            // 前方開放ボーナス
-    public float forwardWallPenalty = -0.005f;         // 前方壁ペナルティ
-    public float wallPenalty = -0.01f;                 // 壁衝突ペナルティ
-    public float rotatePenalty = 0f;                   // 回転行動ペナルティ（必要なら小さく設定可）
+    [Tooltip("新規セル到達報酬")]public float exploreReward = 0.02f;    // 新規セル到達報酬
+    [Tooltip("ゴール視認後の新規セル報酬")]public float exploreRewardAfterGoalVisible = 0.005f; // ゴール視認後の新規セル報酬
+    [Tooltip("前方開放ボーナス")]public float forwardOpenBonus = 0.005f;   // 前方開放ボーナス
+    [Tooltip("前方壁ペナルティ")]public float forwardWallPenalty = -0.005f;  // 前方壁ペナルティ
+    [Tooltip("壁衝突ペナルティ")]public float wallPenalty = -0.01f;  // 壁衝突ペナルティ
+    [Tooltip("回転行動ペナルティ（必要なら小さく設定可）")]public float rotatePenalty = 0f;      // 回転行動ペナルティ（必要なら小さく設定可）
 
     [Header("Exploration")]
-    public float visitedCellSize = 2.5f; // 探索報酬対象セルサイズ（大きめにしてノイズ軽減）
+    [Tooltip("探索報酬対象セルサイズ（大きめにしてノイズ軽減）")]public float visitedCellSize = 2.5f; // 探索報酬対象セルサイズ（大きめにしてノイズ軽減）
 
     [Header("Vision")]
-    public float visionDistance = 15f;
-    public float visionAngle = 90f;
+    [Tooltip("視界として情報を入手可能な距離。RayPerceptionSensor3Dとは別")]public float visionDistance = 15f;
+    [Tooltip("視界として情報を入手可能な角度制限")]public float visionAngle = 90f;
 
     //private Rigidbody rb;
     private HashSet<Vector2Int> visitedCells = new HashSet<Vector2Int>();

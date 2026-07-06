@@ -685,7 +685,7 @@ MonoBehaviour:
     hasUpgradedBrainParametersWithActionSpec: 1
   m_Model: {fileID: 0}
   m_InferenceDevice: 0
-  m_BehaviorType: 0
+  m_BehaviorType: 1
   m_BehaviorName: ExplorerAgent
   TeamId: 0
   m_UseChildSensors: 1
@@ -781,15 +781,15 @@ MonoBehaviour:
   hasUpgradedFromAgentParameters: 1
   MaxStep: 10000
   parentRB: {fileID: 816661329}
-  moveSpeed: 4
+  moveSpeed: 5
   stepPenalty: -0.0002
   goalReward: 10
   goalVisibleReward: 0.5
   goalDistanceRewardMultiplier: 0.005
-  exploreReward: 0.0001
+  exploreReward: 0.01
   exploreRewardAfterGoalVisible: 0
-  forwardOpenBonus: 0.0001
-  forwardWallPenalty: -0.0001
+  forwardOpenBonus: 0
+  forwardWallPenalty: 0
   wallPenalty: 0
   rotatePenalty: 0
   visitedCellSize: 1
