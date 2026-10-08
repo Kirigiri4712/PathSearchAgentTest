@@ -10,7 +10,8 @@ public class LearnManager : MonoBehaviour
 {
     [Header("Prefabs")]
     [SerializeField] private MapGenerator mapGeneratorPrefab;
-    [SerializeField] private ExplorerAgent explorerAgentPrefab;
+    [Tooltip("Assign the complete player prefab root. The ExplorerAgent may be on a child object.")]
+    [SerializeField] private GameObject explorerAgentPrefab;
 
     [Header("Initial Map Complexity")]
     [SerializeField, Min(5)] private int mapWidth = 5;
@@ -108,10 +109,18 @@ public class LearnManager : MonoBehaviour
             return;
         }
 
+        ExplorerAgent prefabAgent = explorerAgentPrefab.GetComponentInChildren<ExplorerAgent>(true);
+        if (prefabAgent == null)
+        {
+            Debug.LogError("The assigned player prefab must contain an ExplorerAgent component.", this);
+            enabled = false;
+            return;
+        }
+
         trainingAreaCount = Mathf.Max(1, trainingAreaCount);
         areaColumns = Mathf.Clamp(areaColumns, 1, trainingAreaCount);
 
-        float sensorRange = Mathf.Max(explorerAgentPrefab.visionDistance, 15f);
+        float sensorRange = Mathf.Max(prefabAgent.visionDistance, 15f);
         float isolationMargin = sensorRange * 2f + areaGap;
         float spacingX = maximumMapWidth + isolationMargin;
         float spacingZ = maximumMapHeight + isolationMargin;
@@ -126,17 +135,27 @@ public class LearnManager : MonoBehaviour
             MapGenerator mapGenerator = Instantiate(
                 mapGeneratorPrefab, areaOrigin, transform.rotation, transform);
 
-            // The player prefab is kept inactive so its ML-Agents callbacks cannot
-            // run until the manager has assigned its area.
-            ExplorerAgent agent = Instantiate(
+            // Instantiate the complete prefab hierarchy: the Rigidbody may be on
+            // its root while ExplorerAgent is attached to a child object.
+            GameObject agentRoot = Instantiate(
                 explorerAgentPrefab, areaOrigin, transform.rotation, transform);
+            agentRoot.SetActive(false);
+            ExplorerAgent agent = agentRoot.GetComponentInChildren<ExplorerAgent>(true);
+            if (agent == null)
+            {
+                Debug.LogError("The instantiated player prefab has no ExplorerAgent component.", agentRoot);
+                Destroy(agentRoot);
+                Destroy(mapGenerator.gameObject);
+                enabled = false;
+                return;
+            }
 
             TrainingArea area = new TrainingArea(mapGenerator, agent);
             trainingAreas.Add(area);
             areaByAgent.Add(agent, area);
 
             agent.BindToLearnManager(this);
-            agent.transform.root.gameObject.SetActive(true);
+            agentRoot.SetActive(true);
         }
     }
 
