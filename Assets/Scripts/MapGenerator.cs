@@ -2,6 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct GeneratedMap
+{
+    public Vector3 SpawnPosition { get; }
+    public Vector3 GoalPosition { get; }
+    public float SpawnRotation { get; }
+
+    public GeneratedMap(Vector3 spawnPosition, Vector3 goalPosition, float spawnRotation)
+    {
+        SpawnPosition = spawnPosition;
+        GoalPosition = goalPosition;
+        SpawnRotation = spawnRotation;
+    }
+}
+
 /// <summary>
 /// ランダムマップ生成
 /// ・1x1ブロックを配置して通路を作成
@@ -12,23 +26,18 @@ using UnityEngine;
 /// </summary>
 public class MapGenerator : MonoBehaviour
 {
-    [Header("Map Size")]
-    public int width = 40;
-    public int height = 40;
-
     [Header("Objects")]
     public GameObject floorPrefab;
     public GameObject wallPrefab;
-    public GameObject playerPrefab;
     public GameObject goalPrefab;
 
     private Transform mapRoot;
 
-    [Header("Generation")]
-    public int waypointCount = 4;
-    [Tooltip("0以外の値が代入されたとき、固定のシード値を使用します。")] public int Seed = 0;
-
     private bool[,] walkable;
+    private System.Random random;
+    private int width;
+    private int height;
+    private int waypointCount;
 
     private Vector2Int playerPos;
     private Vector2Int goalPos;
@@ -41,23 +50,24 @@ public class MapGenerator : MonoBehaviour
         Vector2Int.right
     };
 
-    private void Start()
+    public GeneratedMap Generate(int width, int height, int waypointCount, int seed)
     {
-        AgentSingleton.instance.mapGenerator = this;
-        //Generate();
-    }
+        width = Mathf.Max(5, width);
+        height = Mathf.Max(5, height);
+        waypointCount = Mathf.Clamp(waypointCount, 0, (width - 4) * (height - 4));
+        this.width = width;
+        this.height = height;
+        this.waypointCount = waypointCount;
+        random = new System.Random(seed);
 
-    public void Generate()
-    {
         if (mapRoot != null)
         {
+            mapRoot.gameObject.SetActive(false);
             Destroy(mapRoot.gameObject);
         }
 
         mapRoot = new GameObject("MapRoot").transform;
-
-        if (Seed != 0)
-            UnityEngine.Random.InitState(Seed);
+        mapRoot.SetParent(transform, false);
 
         walkable = new bool[width, height];
 
@@ -110,9 +120,14 @@ public class MapGenerator : MonoBehaviour
 
         BuildMap();
 
-        AgentSingleton.instance.SpawnPos = GridToWorld(playerPos);
-        Instantiate(goalPrefab, GridToWorld(goalPos), Quaternion.identity, mapRoot);
-        AgentSingleton.instance.GoalPos = GridToWorld(goalPos);
+        GameObject goal = Instantiate(goalPrefab, mapRoot);
+        goal.transform.localPosition = GridToLocal(goalPos);
+        goal.transform.localRotation = Quaternion.identity;
+
+        return new GeneratedMap(
+            transform.TransformPoint(GridToLocal(playerPos)),
+            goal.transform.position,
+            (float)random.NextDouble() * 360f);
     }
 
     private void DetermineStartAndGoal()
@@ -125,7 +140,7 @@ public class MapGenerator : MonoBehaviour
             new Vector2Int(width - 2, height - 2)
         };
 
-        int goalIndex = UnityEngine.Random.Range(0, 4);
+        int goalIndex = random.Next(0, 4);
 
         goalPos = corners[goalIndex];
 
@@ -158,8 +173,8 @@ public class MapGenerator : MonoBehaviour
             attempts++;
 
             Vector2Int pos = new Vector2Int(
-                UnityEngine.Random.Range(2, width - 2),
-                UnityEngine.Random.Range(2, height - 2)
+                random.Next(2, width - 2),
+                random.Next(2, height - 2)
             );
 
             if (pos == playerPos || pos == goalPos)
@@ -184,12 +199,14 @@ public class MapGenerator : MonoBehaviour
                     ? floorPrefab
                     : wallPrefab;
 
-                Instantiate(prefab, new Vector3(x, 0, y), Quaternion.identity, mapRoot);
+                GameObject tile = Instantiate(prefab, mapRoot);
+                tile.transform.localPosition = new Vector3(x, 0f, y);
+                tile.transform.localRotation = Quaternion.identity;
             }
         }
     }
 
-    private Vector3 GridToWorld(Vector2Int pos)
+    private Vector3 GridToLocal(Vector2Int pos)
     {
         return new Vector3(pos.x, 0.5f, pos.y);
     }
@@ -316,8 +333,4 @@ public class MapGenerator : MonoBehaviour
                pos.y < height;
     }
 
-    public void ResetMap()
-    {
-        Generate();
-    }
 }

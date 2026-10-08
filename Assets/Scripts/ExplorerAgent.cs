@@ -9,6 +9,7 @@ using UnityEngine.InputSystem;
 public class ExplorerAgent : Agent
 {
     [SerializeField] private Rigidbody parentRB;
+    private LearnManager learnManager;
 
     [Header("Movement")]
     public float moveSpeed = 4f;           // 前後移動の速度
@@ -37,6 +38,7 @@ public class ExplorerAgent : Agent
     private HashSet<Vector2Int> visitedCells = new HashSet<Vector2Int>();
     private bool foundGoal = false;
     private bool canGoal = false;
+    private bool episodeEnded;
     private int stepCount;
     public int maxStep = 5000;
 
@@ -44,6 +46,13 @@ public class ExplorerAgent : Agent
     private Vector2 moveInput;
 
     private Transform goal;
+    private Vector3 episodeSpawnPosition;
+    private Vector3 episodeGoalPosition;
+
+    public void BindToLearnManager(LearnManager manager)
+    {
+        learnManager = manager;
+    }
 
     //探索済みマップ
     private enum MemoryCell
@@ -87,7 +96,7 @@ public class ExplorerAgent : Agent
         if (transform.position.y < -10f)
         {
             AddReward(-1f);
-            EndThisEpisode();
+            EndThisEpisode(false);
         }
     }
 
@@ -121,22 +130,30 @@ public class ExplorerAgent : Agent
 
     public override void OnEpisodeBegin()
     {
+        episodeEnded = false;
         // ゴール到達可能になるまで遅延を挿入
         canGoal = false;
         StartCoroutine(InstantGoalLimit());
 
         // マップ再生成（Environmentリセット）
-        MapGenerator mapGen = AgentSingleton.instance.mapGenerator;
-        if (mapGen != null) mapGen.Generate();
+        if (learnManager == null)
+        {
+            Debug.LogError("ExplorerAgent must be spawned and registered by a LearnManager.", this);
+            return;
+        }
+
+        GeneratedMap map = learnManager.BeginEpisode(this);
+        episodeSpawnPosition = map.SpawnPosition;
+        episodeGoalPosition = map.GoalPosition;
+        goal = null;
 
         // 物理量リセット
         parentRB.linearVelocity = Vector3.zero;
         parentRB.angularVelocity = Vector3.zero;
 
         // エージェント位置・回転設定
-        Vector3 spawn = AgentSingleton.instance.SpawnPos;
-        transform.position = spawn + Vector3.up * 0.5f;
-        transform.rotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
+        parentRB.position = episodeSpawnPosition + Vector3.up * 0.5f;
+        transform.rotation = Quaternion.Euler(0, map.SpawnRotation, 0);
 
         // 探索セル履歴初期化
         visitedCells.Clear();
@@ -156,7 +173,7 @@ public class ExplorerAgent : Agent
         sensor.AddObservation(transform.forward.z);
 
         // 速度
-        Vector3 delta =transform.position - lastPosition;
+        Vector3 delta = transform.position - lastPosition;
 
         sensor.AddObservation(delta.x);
         sensor.AddObservation(delta.z);
@@ -272,11 +289,12 @@ public class ExplorerAgent : Agent
         }
 
         stepCount++;
+        lastPosition = transform.position;
         // 最大ステップ到達でエピソード終了（失敗扱い、報酬追加なし）
         if (stepCount >= maxStep)
         {
             GoalDistanceRewardFoundedGoal();
-            EndThisEpisode();
+            EndThisEpisode(false);
         }
     }
 
@@ -296,11 +314,9 @@ public class ExplorerAgent : Agent
     {
         if(foundGoal)
         {
-            var ins = AgentSingleton.instance;
-            if (ins != null)
-            {
-                AddReward((Vector3.Distance(ins.SpawnPos, ins.GoalPos) - Vector3.Distance(transform.position, ins.GoalPos)) * goalDistanceRewardMultiplier);
-            }
+            AddReward((Vector3.Distance(episodeSpawnPosition, episodeGoalPosition) -
+                Vector3.Distance(transform.position, episodeGoalPosition)) *
+                goalDistanceRewardMultiplier);
         }
     }
 
@@ -319,7 +335,7 @@ public class ExplorerAgent : Agent
         {
             AddReward(goalReward);
             Debug.Log("Goal! Episode reward: " + GetCumulativeReward());
-            EndThisEpisode();
+            EndThisEpisode(true);
         }
     }
 
@@ -332,8 +348,16 @@ public class ExplorerAgent : Agent
         canGoal = true;
     }
 
-    private void EndThisEpisode()
+    private void EndThisEpisode(bool reachedGoal)
     {
+        if (episodeEnded) return;
+        episodeEnded = true;
+
+        if (learnManager != null)
+        {
+            learnManager.RecordEpisodeResult(reachedGoal);
+        }
+
         // エピソード終了
         Debug.Log(GetCumulativeReward());
         EndEpisode();

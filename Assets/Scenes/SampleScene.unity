@@ -399,7 +399,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &816661328
 Transform:
   m_ObjectHideFlags: 0
@@ -502,35 +502,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1814092745}
-  - component: {fileID: 1814092744}
-  - component: {fileID: 1814092746}
+  - component: {fileID: 1533839300}
   m_Layer: 0
-  m_Name: MapGenerator
+  m_Name: LearnManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1814092744
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1814092743}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c95c1071ef49e474b8f57450edae78a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MapGenerator
-  width: 5
-  height: 5
-  floorPrefab: {fileID: 8418485501529855149, guid: 39b84a08c62095245a660b609271f00b, type: 3}
-  wallPrefab: {fileID: 4158837368707686914, guid: bec66acda4de7a842813b81e440a6884, type: 3}
-  playerPrefab: {fileID: 675655544185319631, guid: a301127136da09f43a20a41a77fa5c45, type: 3}
-  goalPrefab: {fileID: 5938477663155409840, guid: dbadc4d1880853140983b7a0cc8ae088, type: 3}
-  waypointCount: 0
-  Seed: 0
 --- !u!4 &1814092745
 Transform:
   m_ObjectHideFlags: 0
@@ -546,7 +525,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1814092746
+--- !u!114 &1533839300
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -555,12 +534,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 1814092743}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7664b80c402c0724db85f75f124649e3, type: 3}
+  m_Script: {fileID: 11500000, guid: 4a6410484e433ee4abe7f3fe3e60fb28, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AgentSingleton
-  mapGenerator: {fileID: 1814092744}
-  SpawnPos: {x: 0, y: 0, z: 0}
-  GoalPos: {x: 0, y: 0, z: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::LearnManager
+  mapGeneratorPrefab: {fileID: 6149264419875351517, guid: 74afc9412b359f04e84500aa89175307, type: 3}
+  explorerAgentPrefab: {fileID: 5802764994693870827, guid: d8b7179c13567624189f0998d65b780b, type: 3}
+  mapWidth: 5
+  mapHeight: 5
+  waypointCount: 0
+  randomSeed: 0
+  trainingAreaCount: 2
+  areaColumns: 2
+  maximumMapWidth: 40
+  maximumMapHeight: 40
+  areaGap: 5
+  successRateWindow: 100
 --- !u!1 &2065711416
 GameObject:
   m_ObjectHideFlags: 0
