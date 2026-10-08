@@ -17,29 +17,52 @@ public class LearnManager : MonoBehaviour
     [SerializeField, Min(5)] private int mapWidth = 5;
     [SerializeField, Min(5)] private int mapHeight = 5;
     [SerializeField, Min(0)] private int waypointCount;
+
+    [Header("Random Seeds")]
+    [Tooltip("0 selects random training seeds; non-zero keeps training seed generation reproducible.")]
     [SerializeField] private int randomSeed;
+    [SerializeField, Min(1)] private int testSeedMinimum = 1;
+    [SerializeField, Min(1)] private int testSeedMaximum = 1000;
+    [Tooltip("Debug only: repeat one reserved test seed instead of generating training maps.")]
+    [SerializeField] private bool useFixedTestSeed;
+    [SerializeField, Min(1)] private int fixedTestSeed = 1;
 
     [Header("Parallel Training Areas")]
     [SerializeField, Min(1)] private int trainingAreaCount = 2;
     [SerializeField, Min(1)] private int areaColumns = 2;
     [SerializeField, Min(5)] private int maximumMapWidth = 40;
     [SerializeField, Min(5)] private int maximumMapHeight = 40;
+    [SerializeField, Min(0)] private int maximumWaypointCount = 20;
     [SerializeField, Min(0)] private float areaGap = 5f;
-    [SerializeField, Min(1)] private int successRateWindow = 100;
+
+    [Header("Automatic Curriculum")]
+    [SerializeField] private bool automaticCurriculum = true;
+    [Tooltip("Number of completed episodes at the current difficulty used for promotion checks.")]
+    [SerializeField, Min(1)] private int successRateWindow = 20;
+    [Tooltip("Required successes in the current window to advance difficulty.")]
+    [SerializeField, Min(1)] private int successesRequiredToAdvance = 18;
+    [SerializeField, Min(1)] private int mapWidthIncreasePerLevel = 2;
+    [SerializeField, Min(1)] private int mapHeightIncreasePerLevel = 2;
+    [Tooltip("Increase waypoints once per this many difficulty promotions.")]
+    [SerializeField, Min(1)] private int waypointIncreaseEveryLevels = 3;
+    [SerializeField, Min(1)] private int waypointIncreaseAmount = 1;
 
     private readonly List<TrainingArea> trainingAreas = new List<TrainingArea>();
     private readonly Dictionary<ExplorerAgent, TrainingArea> areaByAgent =
         new Dictionary<ExplorerAgent, TrainingArea>();
     private readonly Queue<bool> recentEpisodeResults = new Queue<bool>();
+    private System.Random randomTrainingSeedGenerator;
 
     public int CompletedEpisodes { get; private set; }
     public float RecentSuccessRate { get; private set; }
+    public int CurriculumLevel { get; private set; }
 
     private sealed class TrainingArea
     {
         public MapGenerator MapGenerator { get; }
         public ExplorerAgent Agent { get; }
         public int EpisodeCount { get; set; }
+        public int ActiveEpisodeDifficultyLevel { get; set; }
 
         public TrainingArea(MapGenerator mapGenerator, ExplorerAgent agent)
         {
@@ -50,12 +73,17 @@ public class LearnManager : MonoBehaviour
 
     private void Awake()
     {
+        if (randomSeed == 0)
+        {
+            randomTrainingSeedGenerator = new System.Random(Guid.NewGuid().GetHashCode());
+        }
+
         CreateTrainingAreas();
     }
 
     /// <summary>
-    /// Called by each agent when its episode begins. Map complexity is read here
-    /// so a future curriculum can update the shared values between episodes.
+    /// Called by each agent when its episode begins. The current curriculum level
+    /// is captured so episodes already in progress cannot affect the next level.
     /// </summary>
     public GeneratedMap BeginEpisode(ExplorerAgent agent)
     {
@@ -66,6 +94,7 @@ public class LearnManager : MonoBehaviour
         }
 
         int seed = CreateEpisodeSeed(area);
+        area.ActiveEpisodeDifficultyLevel = CurriculumLevel;
         area.EpisodeCount++;
         return area.MapGenerator.Generate(mapWidth, mapHeight, waypointCount, seed);
     }
@@ -78,12 +107,26 @@ public class LearnManager : MonoBehaviour
     {
         mapWidth = Mathf.Clamp(width, 5, maximumMapWidth);
         mapHeight = Mathf.Clamp(height, 5, maximumMapHeight);
-        waypointCount = Mathf.Max(0, waypoints);
+        waypointCount = Mathf.Clamp(waypoints, 0, maximumWaypointCount);
     }
 
-    public void RecordEpisodeResult(bool reachedGoal)
+    public void RecordEpisodeResult(ExplorerAgent agent, bool reachedGoal)
     {
         CompletedEpisodes++;
+
+        if (!areaByAgent.TryGetValue(agent, out TrainingArea area))
+        {
+            Debug.LogWarning($"Received an episode result from unregistered agent '{agent.name}'.", agent);
+            return;
+        }
+
+        // Episodes already in progress at the previous level must not affect the
+        // success window for the new level after another area triggers promotion.
+        if (area.ActiveEpisodeDifficultyLevel != CurriculumLevel)
+        {
+            return;
+        }
+
         recentEpisodeResults.Enqueue(reachedGoal);
 
         while (recentEpisodeResults.Count > successRateWindow)
@@ -98,6 +141,13 @@ public class LearnManager : MonoBehaviour
         }
 
         RecentSuccessRate = (float)successes / recentEpisodeResults.Count;
+
+        if (automaticCurriculum && !useFixedTestSeed &&
+            recentEpisodeResults.Count >= successRateWindow &&
+            successes >= successesRequiredToAdvance)
+        {
+            AdvanceCurriculum(successes);
+        }
     }
 
     private void CreateTrainingAreas()
@@ -161,13 +211,60 @@ public class LearnManager : MonoBehaviour
 
     private int CreateEpisodeSeed(TrainingArea area)
     {
+        if (useFixedTestSeed)
+        {
+            return Mathf.Clamp(fixedTestSeed, testSeedMinimum, testSeedMaximum);
+        }
+
         if (randomSeed == 0)
         {
-            return Guid.NewGuid().GetHashCode();
+            return randomTrainingSeedGenerator.Next(testSeedMaximum + 1, int.MaxValue);
         }
 
         int areaIndex = trainingAreas.IndexOf(area);
-        return unchecked(randomSeed + areaIndex * 1000003 + area.EpisodeCount * 9176);
+        uint value = unchecked((uint)randomSeed);
+        value ^= unchecked((uint)(areaIndex + 1) * 0x9E3779B9u);
+        value ^= unchecked((uint)(area.EpisodeCount + 1) * 0x85EBCA6Bu);
+        value ^= value >> 16;
+        value = unchecked(value * 0x7FEB352Du);
+        value ^= value >> 15;
+        value = unchecked(value * 0x846CA68Bu);
+        value ^= value >> 16;
+
+        uint trainingSeedRange = (uint)(int.MaxValue - testSeedMaximum);
+        return testSeedMaximum + 1 + (int)(value % trainingSeedRange);
+    }
+
+    private void AdvanceCurriculum(int successes)
+    {
+        int nextLevel = CurriculumLevel + 1;
+        bool increaseWaypoints = nextLevel % waypointIncreaseEveryLevels == 0;
+        bool canIncreaseMapSize = mapWidth < maximumMapWidth || mapHeight < maximumMapHeight;
+        bool canIncreaseWaypoints = waypointCount < maximumWaypointCount;
+
+        if (!canIncreaseMapSize && !canIncreaseWaypoints)
+        {
+            automaticCurriculum = false;
+            Debug.Log("Automatic curriculum reached its configured maximum difficulty.", this);
+            return;
+        }
+
+        mapWidth = Mathf.Min(maximumMapWidth, mapWidth + mapWidthIncreasePerLevel);
+        mapHeight = Mathf.Min(maximumMapHeight, mapHeight + mapHeightIncreasePerLevel);
+        if (increaseWaypoints)
+        {
+            waypointCount = Mathf.Min(maximumWaypointCount, waypointCount + waypointIncreaseAmount);
+        }
+
+        CurriculumLevel = nextLevel;
+        Debug.Log(
+            $"Curriculum advanced to level {CurriculumLevel}: " +
+            $"map {mapWidth}x{mapHeight}, waypoints {waypointCount} " +
+            $"({successes}/{successRateWindow} successes).",
+            this);
+
+        recentEpisodeResults.Clear();
+        RecentSuccessRate = 0f;
     }
 
     private void OnValidate()
@@ -179,7 +276,16 @@ public class LearnManager : MonoBehaviour
         areaColumns = Mathf.Clamp(areaColumns, 1, trainingAreaCount);
         maximumMapWidth = Mathf.Max(mapWidth, maximumMapWidth);
         maximumMapHeight = Mathf.Max(mapHeight, maximumMapHeight);
+        maximumWaypointCount = Mathf.Max(waypointCount, maximumWaypointCount);
         areaGap = Mathf.Max(0f, areaGap);
+        testSeedMinimum = Mathf.Clamp(testSeedMinimum, 1, int.MaxValue - 2);
+        testSeedMaximum = Mathf.Clamp(testSeedMaximum, testSeedMinimum, int.MaxValue - 2);
+        fixedTestSeed = Mathf.Clamp(fixedTestSeed, testSeedMinimum, testSeedMaximum);
         successRateWindow = Mathf.Max(1, successRateWindow);
+        successesRequiredToAdvance = Mathf.Clamp(successesRequiredToAdvance, 1, successRateWindow);
+        mapWidthIncreasePerLevel = Mathf.Max(1, mapWidthIncreasePerLevel);
+        mapHeightIncreasePerLevel = Mathf.Max(1, mapHeightIncreasePerLevel);
+        waypointIncreaseEveryLevels = Mathf.Max(1, waypointIncreaseEveryLevels);
+        waypointIncreaseAmount = Mathf.Max(1, waypointIncreaseAmount);
     }
 }

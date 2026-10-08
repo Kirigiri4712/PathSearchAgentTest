@@ -355,7 +355,7 @@ public class ExplorerAgent : Agent
 
         if (learnManager != null)
         {
-            learnManager.RecordEpisodeResult(reachedGoal);
+            learnManager.RecordEpisodeResult(this, reachedGoal);
         }
 
         // エピソード終了
