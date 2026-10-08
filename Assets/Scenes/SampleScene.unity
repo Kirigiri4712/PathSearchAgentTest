@@ -548,7 +548,7 @@ MonoBehaviour:
   maximumMapWidth: 40
   maximumMapHeight: 40
   areaGap: 5
-  successRateWindow: 100
+  successRateWindow: 20
 --- !u!1 &2065711416
 GameObject:
   m_ObjectHideFlags: 0
