@@ -355,7 +355,17 @@ public class ExplorerAgent : Agent
 
         if (learnManager != null)
         {
-            learnManager.RecordEpisodeResult(this, reachedGoal);
+            bool testRunComplete = learnManager.RecordEpisodeResult(this, reachedGoal);
+            if (testRunComplete)
+            {
+                // Leave the final test episode visible in the scene without
+                // starting an unscored episode after seed 1000.
+                parentRB.linearVelocity = Vector3.zero;
+                parentRB.angularVelocity = Vector3.zero;
+                parentRB.isKinematic = true;
+                enabled = false;
+                return;
+            }
         }
 
         // エピソード終了

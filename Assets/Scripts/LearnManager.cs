@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Unity.InferenceEngine;
+using Unity.MLAgents.Policies;
 using UnityEngine;
 
 /// <summary>
@@ -8,10 +10,23 @@ using UnityEngine;
 /// </summary>
 public class LearnManager : MonoBehaviour
 {
+    private enum OperationMode
+    {
+        Training,
+        InferenceTest
+    }
+
     [Header("Prefabs")]
     [SerializeField] private MapGenerator mapGeneratorPrefab;
     [Tooltip("Assign the complete player prefab root. The ExplorerAgent may be on a child object.")]
     [SerializeField] private GameObject explorerAgentPrefab;
+
+    [Header("Operation Mode")]
+    [SerializeField] private OperationMode operationMode = OperationMode.Training;
+    [Tooltip("Required in Inference Test mode. Import the trained ONNX into Assets before assigning it.")]
+    [SerializeField] private ModelAsset testModel;
+    [Tooltip("Use deterministic model actions so repeated seed tests are reproducible.")]
+    [SerializeField] private bool deterministicTestInference = true;
 
     [Header("Initial Map Complexity")]
     [SerializeField, Min(5)] private int mapWidth = 5;
@@ -23,7 +38,7 @@ public class LearnManager : MonoBehaviour
     [SerializeField] private int randomSeed;
     [SerializeField, Min(1)] private int testSeedMinimum = 1;
     [SerializeField, Min(1)] private int testSeedMaximum = 1000;
-    [Tooltip("Debug only: repeat one reserved test seed instead of generating training maps.")]
+    [Tooltip("Training debug only: repeat one reserved test seed instead of generating training maps.")]
     [SerializeField] private bool useFixedTestSeed;
     [SerializeField, Min(1)] private int fixedTestSeed = 1;
 
@@ -52,10 +67,17 @@ public class LearnManager : MonoBehaviour
         new Dictionary<ExplorerAgent, TrainingArea>();
     private readonly Queue<bool> recentEpisodeResults = new Queue<bool>();
     private System.Random randomTrainingSeedGenerator;
+    private int nextTestSeed;
+    private bool testRunComplete;
 
     public int CompletedEpisodes { get; private set; }
     public float RecentSuccessRate { get; private set; }
     public int CurriculumLevel { get; private set; }
+    public int TestEpisodesCompleted { get; private set; }
+    public int TestSuccesses { get; private set; }
+    public float TestSuccessRate { get; private set; }
+    public bool IsTestRunComplete => testRunComplete;
+    public bool IsInferenceTestMode => operationMode == OperationMode.InferenceTest;
 
     private sealed class TrainingArea
     {
@@ -63,6 +85,7 @@ public class LearnManager : MonoBehaviour
         public ExplorerAgent Agent { get; }
         public int EpisodeCount { get; set; }
         public int ActiveEpisodeDifficultyLevel { get; set; }
+        public int ActiveSeed { get; set; }
 
         public TrainingArea(MapGenerator mapGenerator, ExplorerAgent agent)
         {
@@ -73,6 +96,24 @@ public class LearnManager : MonoBehaviour
 
     private void Awake()
     {
+        nextTestSeed = testSeedMinimum;
+
+        if (IsInferenceTestMode)
+        {
+            if (testModel == null)
+            {
+                Debug.LogError("Inference Test mode requires a trained ONNX model in the Test Model field.", this);
+                enabled = false;
+                return;
+            }
+
+            // Evaluation uses one policy instance, a fixed difficulty, and each
+            // reserved seed exactly once. It must not advance the training curriculum.
+            trainingAreaCount = 1;
+            areaColumns = 1;
+            automaticCurriculum = false;
+        }
+
         if (randomSeed == 0)
         {
             randomTrainingSeedGenerator = new System.Random(Guid.NewGuid().GetHashCode());
@@ -94,6 +135,7 @@ public class LearnManager : MonoBehaviour
         }
 
         int seed = CreateEpisodeSeed(area);
+        area.ActiveSeed = seed;
         area.ActiveEpisodeDifficultyLevel = CurriculumLevel;
         area.EpisodeCount++;
         return area.MapGenerator.Generate(mapWidth, mapHeight, waypointCount, seed);
@@ -110,21 +152,50 @@ public class LearnManager : MonoBehaviour
         waypointCount = Mathf.Clamp(waypoints, 0, maximumWaypointCount);
     }
 
-    public void RecordEpisodeResult(ExplorerAgent agent, bool reachedGoal)
+    public bool RecordEpisodeResult(ExplorerAgent agent, bool reachedGoal)
     {
-        CompletedEpisodes++;
-
         if (!areaByAgent.TryGetValue(agent, out TrainingArea area))
         {
             Debug.LogWarning($"Received an episode result from unregistered agent '{agent.name}'.", agent);
-            return;
+            return false;
+        }
+
+        CompletedEpisodes++;
+
+        if (IsInferenceTestMode)
+        {
+            TestEpisodesCompleted++;
+            if (reachedGoal)
+            {
+                TestSuccesses++;
+            }
+
+            TestSuccessRate = (float)TestSuccesses / TestEpisodesCompleted;
+            RecentSuccessRate = TestSuccessRate;
+            int totalTestSeeds = testSeedMaximum - testSeedMinimum + 1;
+            Debug.Log(
+                $"[Inference Test] Seed {area.ActiveSeed}: {(reachedGoal ? "SUCCESS" : "FAIL")} " +
+                $"({TestEpisodesCompleted}/{totalTestSeeds}), success rate {TestSuccessRate:P1}.",
+                this);
+
+            if (TestEpisodesCompleted >= totalTestSeeds)
+            {
+                testRunComplete = true;
+                Debug.Log(
+                    $"[Inference Test Complete] Seeds {testSeedMinimum}-{testSeedMaximum}: " +
+                    $"{TestSuccesses}/{TestEpisodesCompleted} successes ({TestSuccessRate:P1}).",
+                    this);
+                return true;
+            }
+
+            return false;
         }
 
         // Episodes already in progress at the previous level must not affect the
         // success window for the new level after another area triggers promotion.
         if (area.ActiveEpisodeDifficultyLevel != CurriculumLevel)
         {
-            return;
+            return false;
         }
 
         recentEpisodeResults.Enqueue(reachedGoal);
@@ -148,6 +219,8 @@ public class LearnManager : MonoBehaviour
         {
             AdvanceCurriculum(successes);
         }
+
+        return false;
     }
 
     private void CreateTrainingAreas()
@@ -163,6 +236,15 @@ public class LearnManager : MonoBehaviour
         if (prefabAgent == null)
         {
             Debug.LogError("The assigned player prefab must contain an ExplorerAgent component.", this);
+            enabled = false;
+            return;
+        }
+
+        BehaviorParameters prefabBehavior =
+            explorerAgentPrefab.GetComponentInChildren<BehaviorParameters>(true);
+        if (IsInferenceTestMode && prefabBehavior == null)
+        {
+            Debug.LogError("The assigned ExplorerAgent prefab must contain Behavior Parameters for inference testing.", this);
             enabled = false;
             return;
         }
@@ -205,12 +287,46 @@ public class LearnManager : MonoBehaviour
             areaByAgent.Add(agent, area);
 
             agent.BindToLearnManager(this);
+
+            if (IsInferenceTestMode)
+            {
+                ConfigureInferenceTestAgent(agent, agentRoot);
+            }
+
             agentRoot.SetActive(true);
         }
     }
 
+    private void ConfigureInferenceTestAgent(ExplorerAgent agent, GameObject agentRoot)
+    {
+        BehaviorParameters behavior = agentRoot.GetComponentInChildren<BehaviorParameters>(true);
+        if (behavior == null)
+        {
+            Debug.LogError("The instantiated ExplorerAgent prefab has no Behavior Parameters component.", agentRoot);
+            enabled = false;
+            return;
+        }
+
+        // Set the model through Agent.SetModel (the ML-Agents runtime API), then
+        // force inference so this mode cannot accidentally train via a Python trainer.
+        behavior.BehaviorType = BehaviorType.HeuristicOnly;
+        behavior.DeterministicInference = deterministicTestInference;
+        agent.SetModel(behavior.BehaviorName, testModel, behavior.InferenceDevice);
+        behavior.BehaviorType = BehaviorType.InferenceOnly;
+    }
+
     private int CreateEpisodeSeed(TrainingArea area)
     {
+        if (IsInferenceTestMode)
+        {
+            if (nextTestSeed > testSeedMaximum)
+            {
+                throw new InvalidOperationException("The reserved inference test seed range has been exhausted.");
+            }
+
+            return nextTestSeed++;
+        }
+
         if (useFixedTestSeed)
         {
             return Mathf.Clamp(fixedTestSeed, testSeedMinimum, testSeedMaximum);
