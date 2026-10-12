@@ -1,5 +1,9 @@
 # Repository Guidelines
 
+## Research Goal
+
+The final research objective of this repository is to create an AI agent that operates as an FPS player in an unknown environment where enemies and other hazards are present. The agent must rely only on information that would be available to the player, evaluate risk and partial observations as it explores, and continually choose the best available action while progressing toward the goal. Development decisions should support this long-term objective rather than treating the project as a simple fully observable shortest-path problem.
+
 ## Project Structure & Module Organization
 
 This is a Unity 6 (`6000.3.9f1`) project for training an ML-Agents path-search agent. Runtime C# code lives in `Assets/Scripts/`, with `ExplorerAgent.cs` implementing agent behavior and `MapGenerator.cs` building environments. Scenes are in `Assets/Scenes/`, reusable objects in `Assets/Prefab/`, materials and trained models in `Assets/Materials/` and `Assets/Models/`, and PPO settings in `Assets/config/trainer.yaml`. Unity package versions are pinned in `Packages/`; project-wide editor settings belong in `ProjectSettings/`. Treat `Library/`, `Temp/`, `Logs/`, `obj/`, and generated solution files as local artifacts. Training outputs under `results/` can be large; add them only when they are intentional deliverables.

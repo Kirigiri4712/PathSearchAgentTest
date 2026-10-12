@@ -1,0 +1,692 @@
+
+pytorch
+2.11.0+cpu:¥à
+·
+obs_0
+1network_body.processors.0.normalizer.running_meansubnode_sub"SubJ—
+	namespace√: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body.observation_encoder: mlagents.trainers.torch_entities.networks.ObservationEncoder/network_body.observation_encoder.processors.0: mlagents.trainers.torch_entities.encoders.VectorInput/network_body.observation_encoder.processors.0.normalizer: mlagents.trainers.torch_entities.encoders.Normalizer/sub: aten.sub.TensorJŸ
+pkg.torch.onnx.class_hierarchy∂['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.networks.ObservationEncoder', 'mlagents.trainers.torch_entities.encoders.VectorInput', 'mlagents.trainers.torch_entities.encoders.Normalizer', 'aten.sub.Tensor']J∏
+pkg.torch.onnx.fx_nodeù%sub : [num_users=1] = call_function[target=torch.ops.aten.sub.Tensor](args = (%inputs_0, %b_network_body_processors_0_normalizer_running_mean), kwargs = {})JÀ
+pkg.torch.onnx.name_scopes¨['', 'network_body', 'network_body.observation_encoder', 'network_body.observation_encoder.processors.0', 'network_body.observation_encoder.processors.0.normalizer', 'sub']J◊
+pkg.torch.onnx.stack_trace∏File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 237, in forward
+    encoded_self = self.observation_encoder(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 110, in forward
+    processed_obs = processor(obs_input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 100, in forward
+    inputs = self.normalizer(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 16, in forward
+    (inputs - self.running_mean)
+á
+sub
+sqrtdiv_1
+node_div_1"DivJ”
+	namespace≈: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body.observation_encoder: mlagents.trainers.torch_entities.networks.ObservationEncoder/network_body.observation_encoder.processors.0: mlagents.trainers.torch_entities.encoders.VectorInput/network_body.observation_encoder.processors.0.normalizer: mlagents.trainers.torch_entities.encoders.Normalizer/div_1: aten.div.TensorJŸ
+pkg.torch.onnx.class_hierarchy∂['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.networks.ObservationEncoder', 'mlagents.trainers.torch_entities.encoders.VectorInput', 'mlagents.trainers.torch_entities.encoders.Normalizer', 'aten.div.Tensor']JÖ
+pkg.torch.onnx.fx_nodek%div_1 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%sub, %sqrt), kwargs = {})JÕ
+pkg.torch.onnx.name_scopesÆ['', 'network_body', 'network_body.observation_encoder', 'network_body.observation_encoder.processors.0', 'network_body.observation_encoder.processors.0.normalizer', 'div_1']J◊
+pkg.torch.onnx.stack_trace∏File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 237, in forward
+    encoded_self = self.observation_encoder(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 110, in forward
+    processed_obs = processor(obs_input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 100, in forward
+    inputs = self.normalizer(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 16, in forward
+    (inputs - self.running_mean)
+ä
+div_1
+	div_1_min
+	div_1_maxclampnode_Clip_11"ClipJ’
+	namespace«: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body.observation_encoder: mlagents.trainers.torch_entities.networks.ObservationEncoder/network_body.observation_encoder.processors.0: mlagents.trainers.torch_entities.encoders.VectorInput/network_body.observation_encoder.processors.0.normalizer: mlagents.trainers.torch_entities.encoders.Normalizer/clamp: aten.clamp.TensorJ5
+!pkg.onnxscript.rewriter.rule_nameFuseMaxMinToClipJ€
+pkg.torch.onnx.class_hierarchy∏['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.networks.ObservationEncoder', 'mlagents.trainers.torch_entities.encoders.VectorInput', 'mlagents.trainers.torch_entities.encoders.Normalizer', 'aten.clamp.Tensor']Jµ
+pkg.torch.onnx.fx_nodeö%clamp : [num_users=1] = call_function[target=torch.ops.aten.clamp.Tensor](args = (%div_1, %scalar_tensor_default, %scalar_tensor_default_1), kwargs = {})JÕ
+pkg.torch.onnx.name_scopesÆ['', 'network_body', 'network_body.observation_encoder', 'network_body.observation_encoder.processors.0', 'network_body.observation_encoder.processors.0.normalizer', 'clamp']J⁄
+pkg.torch.onnx.stack_traceªFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 237, in forward
+    encoded_self = self.observation_encoder(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 110, in forward
+    processed_obs = processor(obs_input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 100, in forward
+    inputs = self.normalizer(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 15, in forward
+    normalized_state = torch.clamp(
+Î
+obs_1
+1network_body.processors.1.normalizer.running_meansub_4
+node_sub_4"SubJ”
+	namespace≈: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body.observation_encoder: mlagents.trainers.torch_entities.networks.ObservationEncoder/network_body.observation_encoder.processors.1: mlagents.trainers.torch_entities.encoders.VectorInput/network_body.observation_encoder.processors.1.normalizer: mlagents.trainers.torch_entities.encoders.Normalizer/sub_4: aten.sub.TensorJŸ
+pkg.torch.onnx.class_hierarchy∂['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.networks.ObservationEncoder', 'mlagents.trainers.torch_entities.encoders.VectorInput', 'mlagents.trainers.torch_entities.encoders.Normalizer', 'aten.sub.Tensor']J∫
+pkg.torch.onnx.fx_nodeü%sub_4 : [num_users=1] = call_function[target=torch.ops.aten.sub.Tensor](args = (%inputs_1, %b_network_body_processors_1_normalizer_running_mean), kwargs = {})JÕ
+pkg.torch.onnx.name_scopesÆ['', 'network_body', 'network_body.observation_encoder', 'network_body.observation_encoder.processors.1', 'network_body.observation_encoder.processors.1.normalizer', 'sub_4']J◊
+pkg.torch.onnx.stack_trace∏File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 237, in forward
+    encoded_self = self.observation_encoder(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 110, in forward
+    processed_obs = processor(obs_input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 100, in forward
+    inputs = self.normalizer(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 16, in forward
+    (inputs - self.running_mean)
+è
+sub_4
+sqrt_1div_3
+node_div_3"DivJ”
+	namespace≈: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body.observation_encoder: mlagents.trainers.torch_entities.networks.ObservationEncoder/network_body.observation_encoder.processors.1: mlagents.trainers.torch_entities.encoders.VectorInput/network_body.observation_encoder.processors.1.normalizer: mlagents.trainers.torch_entities.encoders.Normalizer/div_3: aten.div.TensorJŸ
+pkg.torch.onnx.class_hierarchy∂['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.networks.ObservationEncoder', 'mlagents.trainers.torch_entities.encoders.VectorInput', 'mlagents.trainers.torch_entities.encoders.Normalizer', 'aten.div.Tensor']Jâ
+pkg.torch.onnx.fx_nodeo%div_3 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%sub_4, %sqrt_1), kwargs = {})JÕ
+pkg.torch.onnx.name_scopesÆ['', 'network_body', 'network_body.observation_encoder', 'network_body.observation_encoder.processors.1', 'network_body.observation_encoder.processors.1.normalizer', 'div_3']J◊
+pkg.torch.onnx.stack_trace∏File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 237, in forward
+    encoded_self = self.observation_encoder(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 110, in forward
+    processed_obs = processor(obs_input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 100, in forward
+    inputs = self.normalizer(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 16, in forward
+    (inputs - self.running_mean)
+î
+div_3
+	div_1_min
+	div_1_maxclamp_1node_Clip_12"ClipJ◊
+	namespace…: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body.observation_encoder: mlagents.trainers.torch_entities.networks.ObservationEncoder/network_body.observation_encoder.processors.1: mlagents.trainers.torch_entities.encoders.VectorInput/network_body.observation_encoder.processors.1.normalizer: mlagents.trainers.torch_entities.encoders.Normalizer/clamp_1: aten.clamp.TensorJ5
+!pkg.onnxscript.rewriter.rule_nameFuseMaxMinToClipJ€
+pkg.torch.onnx.class_hierarchy∏['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.networks.ObservationEncoder', 'mlagents.trainers.torch_entities.encoders.VectorInput', 'mlagents.trainers.torch_entities.encoders.Normalizer', 'aten.clamp.Tensor']Jπ
+pkg.torch.onnx.fx_nodeû%clamp_1 : [num_users=1] = call_function[target=torch.ops.aten.clamp.Tensor](args = (%div_3, %scalar_tensor_default_2, %scalar_tensor_default_3), kwargs = {})Jœ
+pkg.torch.onnx.name_scopes∞['', 'network_body', 'network_body.observation_encoder', 'network_body.observation_encoder.processors.1', 'network_body.observation_encoder.processors.1.normalizer', 'clamp_1']J⁄
+pkg.torch.onnx.stack_traceªFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 237, in forward
+    encoded_self = self.observation_encoder(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 110, in forward
+    processed_obs = processor(obs_input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 100, in forward
+    inputs = self.normalizer(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\encoders.py", line 15, in forward
+    normalized_state = torch.clamp(
+Ä
+clamp
+clamp_1catnode_cat"Concat*
+axis†J˛
+	namespace: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body.observation_encoder: mlagents.trainers.torch_entities.networks.ObservationEncoder/cat: aten.cat.defaultJÈ
+pkg.torch.onnx.class_hierarchy∆['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.networks.ObservationEncoder', 'aten.cat.default']Jé
+pkg.torch.onnx.fx_nodet%cat : [num_users=1] = call_function[target=torch.ops.aten.cat.default](args = ([%clamp, %clamp_1], 1), kwargs = {})J]
+pkg.torch.onnx.name_scopes?['', 'network_body', 'network_body.observation_encoder', 'cat']JÏ
+pkg.torch.onnx.stack_traceÕFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 237, in forward
+    encoded_self = self.observation_encoder(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 115, in forward
+    encoded_self = torch.cat(encodes, dim=1)
+◊
+cat
+.network_body._body_endoder.seq_layers.0.weight
+,network_body._body_endoder.seq_layers.0.biaslinearnode_linear"Gemm*
+transA †*
+transB†*
+alpha  Ä?†*
+beta  Ä?†Jå
+	namespace˛: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body._body_endoder: mlagents.trainers.torch_entities.layers.LinearEncoder/network_body._body_endoder.seq_layers: torch.nn.modules.container.Sequential/network_body._body_endoder.seq_layers.0: torch.nn.modules.linear.Linear/linear: aten.linear.defaultJ∞
+pkg.torch.onnx.class_hierarchyç['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.layers.LinearEncoder', 'torch.nn.modules.container.Sequential', 'torch.nn.modules.linear.Linear', 'aten.linear.default']JË
+pkg.torch.onnx.fx_nodeÕ%linear : [num_users=2] = call_function[target=torch.ops.aten.linear.default](args = (%cat, %p_network_body__body_endoder_seq_layers_0_weight, %p_network_body__body_endoder_seq_layers_0_bias), kwargs = {})JØ
+pkg.torch.onnx.name_scopesê['', 'network_body', 'network_body._body_endoder', 'network_body._body_endoder.seq_layers', 'network_body._body_endoder.seq_layers.0', 'linear']J∏
+pkg.torch.onnx.stack_traceôFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 244, in forward
+    encoding = self._body_endoder(encoded_self)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 169, in forward
+    return self.seq_layers(input_tensor)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\container.py", line 253, in forward
+    input = module(input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+ë
+linearsigmoidnode_sigmoid"SigmoidJù
+	namespaceè: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body._body_endoder: mlagents.trainers.torch_entities.layers.LinearEncoder/network_body._body_endoder.seq_layers: torch.nn.modules.container.Sequential/network_body._body_endoder.seq_layers.1: mlagents.trainers.torch_entities.layers.Swish/sigmoid: aten.sigmoid.defaultJ¿
+pkg.torch.onnx.class_hierarchyù['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.layers.LinearEncoder', 'torch.nn.modules.container.Sequential', 'mlagents.trainers.torch_entities.layers.Swish', 'aten.sigmoid.default']Jâ
+pkg.torch.onnx.fx_nodeo%sigmoid : [num_users=1] = call_function[target=torch.ops.aten.sigmoid.default](args = (%linear,), kwargs = {})J∞
+pkg.torch.onnx.name_scopesë['', 'network_body', 'network_body._body_endoder', 'network_body._body_endoder.seq_layers', 'network_body._body_endoder.seq_layers.1', 'sigmoid']Jƒ
+pkg.torch.onnx.stack_trace•File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 244, in forward
+    encoding = self._body_endoder(encoded_self)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 169, in forward
+    return self.seq_layers(input_tensor)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\container.py", line 253, in forward
+    input = module(input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 10, in forward
+    return torch.mul(data, torch.sigmoid(data))
+ã
+linear
+sigmoidmul_18node_mul_18"MulJó
+	namespaceâ: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body._body_endoder: mlagents.trainers.torch_entities.layers.LinearEncoder/network_body._body_endoder.seq_layers: torch.nn.modules.container.Sequential/network_body._body_endoder.seq_layers.1: mlagents.trainers.torch_entities.layers.Swish/mul_18: aten.mul.TensorJª
+pkg.torch.onnx.class_hierarchyò['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.layers.LinearEncoder', 'torch.nn.modules.container.Sequential', 'mlagents.trainers.torch_entities.layers.Swish', 'aten.mul.Tensor']Jå
+pkg.torch.onnx.fx_noder%mul_18 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%linear, %sigmoid), kwargs = {})JØ
+pkg.torch.onnx.name_scopesê['', 'network_body', 'network_body._body_endoder', 'network_body._body_endoder.seq_layers', 'network_body._body_endoder.seq_layers.1', 'mul_18']Jƒ
+pkg.torch.onnx.stack_trace•File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 244, in forward
+    encoding = self._body_endoder(encoded_self)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 169, in forward
+    return self.seq_layers(input_tensor)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\container.py", line 253, in forward
+    input = module(input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 10, in forward
+    return torch.mul(data, torch.sigmoid(data))
+Á
+mul_18
+.network_body._body_endoder.seq_layers.2.weight
+,network_body._body_endoder.seq_layers.2.biaslinear_1node_linear_1"Gemm*
+transA †*
+transB†*
+alpha  Ä?†*
+beta  Ä?†Jé
+	namespaceÄ: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body._body_endoder: mlagents.trainers.torch_entities.layers.LinearEncoder/network_body._body_endoder.seq_layers: torch.nn.modules.container.Sequential/network_body._body_endoder.seq_layers.2: torch.nn.modules.linear.Linear/linear_1: aten.linear.defaultJ∞
+pkg.torch.onnx.class_hierarchyç['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.layers.LinearEncoder', 'torch.nn.modules.container.Sequential', 'torch.nn.modules.linear.Linear', 'aten.linear.default']JÌ
+pkg.torch.onnx.fx_node“%linear_1 : [num_users=2] = call_function[target=torch.ops.aten.linear.default](args = (%mul_18, %p_network_body__body_endoder_seq_layers_2_weight, %p_network_body__body_endoder_seq_layers_2_bias), kwargs = {})J±
+pkg.torch.onnx.name_scopesí['', 'network_body', 'network_body._body_endoder', 'network_body._body_endoder.seq_layers', 'network_body._body_endoder.seq_layers.2', 'linear_1']J∏
+pkg.torch.onnx.stack_traceôFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 244, in forward
+    encoding = self._body_endoder(encoded_self)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 169, in forward
+    return self.seq_layers(input_tensor)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\container.py", line 253, in forward
+    input = module(input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+ü
+linear_1	sigmoid_1node_sigmoid_1"SigmoidJü
+	namespaceë: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body._body_endoder: mlagents.trainers.torch_entities.layers.LinearEncoder/network_body._body_endoder.seq_layers: torch.nn.modules.container.Sequential/network_body._body_endoder.seq_layers.3: mlagents.trainers.torch_entities.layers.Swish/sigmoid_1: aten.sigmoid.defaultJ¿
+pkg.torch.onnx.class_hierarchyù['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.layers.LinearEncoder', 'torch.nn.modules.container.Sequential', 'mlagents.trainers.torch_entities.layers.Swish', 'aten.sigmoid.default']Jç
+pkg.torch.onnx.fx_nodes%sigmoid_1 : [num_users=1] = call_function[target=torch.ops.aten.sigmoid.default](args = (%linear_1,), kwargs = {})J≤
+pkg.torch.onnx.name_scopesì['', 'network_body', 'network_body._body_endoder', 'network_body._body_endoder.seq_layers', 'network_body._body_endoder.seq_layers.3', 'sigmoid_1']Jƒ
+pkg.torch.onnx.stack_trace•File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 244, in forward
+    encoding = self._body_endoder(encoded_self)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 169, in forward
+    return self.seq_layers(input_tensor)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\container.py", line 253, in forward
+    input = module(input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 10, in forward
+    return torch.mul(data, torch.sigmoid(data))
+ì
+linear_1
+	sigmoid_1mul_25node_mul_25"MulJó
+	namespaceâ: mlagents.trainers.torch_entities.networks.SimpleActor/network_body: mlagents.trainers.torch_entities.networks.NetworkBody/network_body._body_endoder: mlagents.trainers.torch_entities.layers.LinearEncoder/network_body._body_endoder.seq_layers: torch.nn.modules.container.Sequential/network_body._body_endoder.seq_layers.3: mlagents.trainers.torch_entities.layers.Swish/mul_25: aten.mul.TensorJª
+pkg.torch.onnx.class_hierarchyò['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.networks.NetworkBody', 'mlagents.trainers.torch_entities.layers.LinearEncoder', 'torch.nn.modules.container.Sequential', 'mlagents.trainers.torch_entities.layers.Swish', 'aten.mul.Tensor']Jê
+pkg.torch.onnx.fx_nodev%mul_25 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%linear_1, %sigmoid_1), kwargs = {})JØ
+pkg.torch.onnx.name_scopesê['', 'network_body', 'network_body._body_endoder', 'network_body._body_endoder.seq_layers', 'network_body._body_endoder.seq_layers.3', 'mul_25']Jƒ
+pkg.torch.onnx.stack_trace•File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 682, in forward
+    encoding, memories_out = self.network_body(
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 244, in forward
+    encoding = self._body_endoder(encoded_self)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 169, in forward
+    return self.seq_layers(input_tensor)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\container.py", line 253, in forward
+    input = module(input)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\layers.py", line 10, in forward
+    return torch.mul(data, torch.sigmoid(data))
+é
+mul_25
+/action_model._continuous_distribution.mu.weight
+-action_model._continuous_distribution.mu.biaslinear_2node_linear_2"Gemm*
+transA †*
+transB†*
+alpha  Ä?†*
+beta  Ä?†Jó
+	namespaceâ: mlagents.trainers.torch_entities.networks.SimpleActor/action_model._continuous_distribution: mlagents.trainers.torch_entities.distributions.GaussianDistribution/action_model._continuous_distribution.mu: torch.nn.modules.linear.Linear/linear_2: aten.linear.defaultJ‹
+pkg.torch.onnx.class_hierarchyπ['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.distributions.GaussianDistribution', 'torch.nn.modules.linear.Linear', 'aten.linear.default']JÔ
+pkg.torch.onnx.fx_node‘%linear_2 : [num_users=4] = call_function[target=torch.ops.aten.linear.default](args = (%mul_25, %p_action_model__continuous_distribution_mu_weight, %p_action_model__continuous_distribution_mu_bias), kwargs = {})JÉ
+pkg.torch.onnx.name_scopese['', 'action_model._continuous_distribution', 'action_model._continuous_distribution.mu', 'linear_2']J‘
+pkg.torch.onnx.stack_traceµFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\distributions.py", line 184, in forward
+    mu = self.mu(inputs)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\torch\nn\modules\linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+Í
+linear_2
+scalar_tensor_default_4mul_30node_mul_30"MulJ»
+	namespace∫: mlagents.trainers.torch_entities.networks.SimpleActor/action_model._continuous_distribution: mlagents.trainers.torch_entities.distributions.GaussianDistribution/mul_30: aten.mul.TensorJ∂
+pkg.torch.onnx.class_hierarchyì['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.distributions.GaussianDistribution', 'aten.mul.Tensor']Jü
+pkg.torch.onnx.fx_nodeÑ%mul_30 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%linear_2, %scalar_tensor_default_4), kwargs = {})JU
+pkg.torch.onnx.name_scopes7['', 'action_model._continuous_distribution', 'mul_30']J≠
+pkg.torch.onnx.stack_traceéFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\distributions.py", line 193, in forward
+    log_sigma = mu * 0 + self.log_sigma
+ò	
+mul_30
+/action_model._continuous_distribution.log_sigmaadd_45node_add_45"AddJ»
+	namespace∫: mlagents.trainers.torch_entities.networks.SimpleActor/action_model._continuous_distribution: mlagents.trainers.torch_entities.distributions.GaussianDistribution/add_45: aten.add.TensorJ∂
+pkg.torch.onnx.class_hierarchyì['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.distributions.GaussianDistribution', 'aten.add.Tensor']J∑
+pkg.torch.onnx.fx_nodeú%add_45 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%mul_30, %p_action_model__continuous_distribution_log_sigma), kwargs = {})JU
+pkg.torch.onnx.name_scopes7['', 'action_model._continuous_distribution', 'add_45']J≠
+pkg.torch.onnx.stack_traceéFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\distributions.py", line 193, in forward
+    log_sigma = mu * 0 + self.log_sigma
+π
+add_45expnode_exp"ExpJ∆
+	namespace∏: mlagents.trainers.torch_entities.networks.SimpleActor/action_model._continuous_distribution: mlagents.trainers.torch_entities.distributions.GaussianDistribution/exp: aten.exp.defaultJ∑
+pkg.torch.onnx.class_hierarchyî['mlagents.trainers.torch_entities.networks.SimpleActor', 'mlagents.trainers.torch_entities.distributions.GaussianDistribution', 'aten.exp.default']JÅ
+pkg.torch.onnx.fx_nodeg%exp : [num_users=1] = call_function[target=torch.ops.aten.exp.default](args = (%add_45,), kwargs = {})JR
+pkg.torch.onnx.name_scopes4['', 'action_model._continuous_distribution', 'exp']Jø
+pkg.torch.onnx.stack_trace†File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+  File "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\distributions.py", line 197, in forward
+    return GaussianDistInstance(mu, torch.exp(log_sigma))
+Ç
+linear_2
+randn_likenode_randn_like"RandomNormalLike*
+mean    †*
+scale  Ä?†Jh
+	namespace[: mlagents.trainers.torch_entities.networks.SimpleActor/randn_like: aten.randn_like.defaultJv
+pkg.torch.onnx.class_hierarchyT['mlagents.trainers.torch_entities.networks.SimpleActor', 'aten.randn_like.default']J£
+pkg.torch.onnx.fx_nodeà%randn_like : [num_users=1] = call_function[target=torch.ops.aten.randn_like.default](args = (%linear_2,), kwargs = {pin_memory: False})J0
+pkg.torch.onnx.name_scopes['', 'randn_like']JÎ
+pkg.torch.onnx.stack_traceÃFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+§
+
+randn_like
+expmul_39node_mul_39"MulJ\
+	namespaceO: mlagents.trainers.torch_entities.networks.SimpleActor/mul_39: aten.mul.TensorJn
+pkg.torch.onnx.class_hierarchyL['mlagents.trainers.torch_entities.networks.SimpleActor', 'aten.mul.Tensor']Jå
+pkg.torch.onnx.fx_noder%mul_39 : [num_users=1] = call_function[target=torch.ops.aten.mul.Tensor](args = (%randn_like, %exp), kwargs = {})J,
+pkg.torch.onnx.name_scopes['', 'mul_39']JÎ
+pkg.torch.onnx.stack_traceÃFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+¶
+linear_2
+mul_39add_58node_add_58"AddJ\
+	namespaceO: mlagents.trainers.torch_entities.networks.SimpleActor/add_58: aten.add.TensorJn
+pkg.torch.onnx.class_hierarchyL['mlagents.trainers.torch_entities.networks.SimpleActor', 'aten.add.Tensor']Jç
+pkg.torch.onnx.fx_nodes%add_58 : [num_users=1] = call_function[target=torch.ops.aten.add.Tensor](args = (%linear_2, %mul_39), kwargs = {})J,
+pkg.torch.onnx.name_scopes['', 'add_58']JÎ
+pkg.torch.onnx.stack_traceÃFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+Æ
+add_58
+
+add_58_min
+scalar_tensor_default_7clamp_2node_Clip_13"ClipJ_
+	namespaceR: mlagents.trainers.torch_entities.networks.SimpleActor/clamp_2: aten.clamp.TensorJ5
+!pkg.onnxscript.rewriter.rule_nameFuseMaxMinToClipJp
+pkg.torch.onnx.class_hierarchyN['mlagents.trainers.torch_entities.networks.SimpleActor', 'aten.clamp.Tensor']J∫
+pkg.torch.onnx.fx_nodeü%clamp_2 : [num_users=1] = call_function[target=torch.ops.aten.clamp.Tensor](args = (%add_58, %scalar_tensor_default_5, %scalar_tensor_default_6), kwargs = {})J-
+pkg.torch.onnx.name_scopes['', 'clamp_2']JÎ
+pkg.torch.onnx.stack_traceÃFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+œ
+clamp_2
+scalar_tensor_default_7continuous_actions
+node_div_4"DivJ[
+	namespaceN: mlagents.trainers.torch_entities.networks.SimpleActor/div_4: aten.div.TensorJn
+pkg.torch.onnx.class_hierarchyL['mlagents.trainers.torch_entities.networks.SimpleActor', 'aten.div.Tensor']Jù
+pkg.torch.onnx.fx_nodeÇ%div_4 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%clamp_2, %scalar_tensor_default_7), kwargs = {})J+
+pkg.torch.onnx.name_scopes['', 'div_4']JÎ
+pkg.torch.onnx.stack_traceÃFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+≤
+linear_2
+
+add_58_min
+scalar_tensor_default_7clamp_3node_Clip_14"ClipJ_
+	namespaceR: mlagents.trainers.torch_entities.networks.SimpleActor/clamp_3: aten.clamp.TensorJ5
+!pkg.onnxscript.rewriter.rule_nameFuseMaxMinToClipJp
+pkg.torch.onnx.class_hierarchyN['mlagents.trainers.torch_entities.networks.SimpleActor', 'aten.clamp.Tensor']Jº
+pkg.torch.onnx.fx_node°%clamp_3 : [num_users=1] = call_function[target=torch.ops.aten.clamp.Tensor](args = (%linear_2, %scalar_tensor_default_8, %scalar_tensor_default_9), kwargs = {})J-
+pkg.torch.onnx.name_scopes['', 'clamp_3']JÎ
+pkg.torch.onnx.stack_traceÃFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+ﬁ
+clamp_3
+scalar_tensor_default_7 deterministic_continuous_actions
+node_div_5"DivJ[
+	namespaceN: mlagents.trainers.torch_entities.networks.SimpleActor/div_5: aten.div.TensorJn
+pkg.torch.onnx.class_hierarchyL['mlagents.trainers.torch_entities.networks.SimpleActor', 'aten.div.Tensor']Jû
+pkg.torch.onnx.fx_nodeÉ%div_5 : [num_users=1] = call_function[target=torch.ops.aten.div.Tensor](args = (%clamp_3, %scalar_tensor_default_10), kwargs = {})J+
+pkg.torch.onnx.name_scopes['', 'div_5']JÎ
+pkg.torch.onnx.stack_traceÃFile "C:\Users\kirir\AppData\Local\Programs\Python\Python310\lib\site-packages\mlagents\trainers\torch_entities\networks.py", line 692, in forward
+    ) = self.action_model.get_action_out(encoding, masks)
+main_graph*Bversion_numberJ  @@*~ÄB,network_body._body_endoder.seq_layers.0.biasj+
+locationExplorerAgent-1499872.onnx.dataj
+offset0j
+length512p*ÄÄB,network_body._body_endoder.seq_layers.2.biasj+
+locationExplorerAgent-1499872.onnx.dataj
+offset512j
+length512p*AB/action_model._continuous_distribution.log_sigmaJÃ…ΩóÃﬂΩ*áÄB/action_model._continuous_distribution.mu.weightj+
+locationExplorerAgent-1499872.onnx.dataj
+offset2064j
+length1024p*=B-action_model._continuous_distribution.mu.biasJ√„Ü<0j∫*ä4B1network_body.processors.0.normalizer.running_meanJ– Û}?¬Y;k”ô;Fi§=˚ˆ}?k:U;f”ô;∂bß=ñˆ}?|ÌU;Ÿô;`)§=b ~?ˆÎK;⁄Èô;,S´=˘}?[ËQ;;‰ô;,C¶=è~?˛?;M»ô;ÛÙØ=e~?VÛH;•ﬁô;Î[™=0~?˜ﬂ0;¢ﬁô;è¥=i~?∞9;Ωô;GËÆ=.~? ;¨ﬁô;^π=á)~?ã";ﬂÕô;/?¥=È=~?q.;†ﬁô;ü™æ=«=~?ÕO;’Èô;∫=*ÜÇB1network_body.processors.1.normalizer.running_meanj+
+locationExplorerAgent-1499872.onnx.dataj
+offset1024j
+length520p*âÄ∂B.network_body._body_endoder.seq_layers.0.weightj+
+locationExplorerAgent-1499872.onnx.dataj
+offset68624j
+length93184p*àÄÄB.network_body._body_endoder.seq_layers.2.weightj+
+locationExplorerAgent-1499872.onnx.dataj
+offset3088j
+length65536p*›4BsqrtJ–ıÜ∂=WXk=p å=6oÌ=èﬁµ=fHi=o å=‹’Ô=úˇµ=M™i=˚å=˙Ì=H¥=a(d=é
+å=»=ıPµ=∑wg=å=kvÓ=–#≤=}e]=b˚ã=ø;Ò=4ø≥=E{b=å=<ÏÔ=ΩyØ=^áT=Éå=1Â=œ„∞=≈]Y=Vˆã=k=Á¨=óÌH=}å=∏â=u€¨=Ÿ¬K=Í˝ã=∂Â=©©=tõ>=Åå=Å§=*©=≤>=è
+å=∂Ò=*[ÇBsqrt_1j+
+locationExplorerAgent-1499872.onnx.dataj
+offset1544j
+length520p*!Bscalar_tensor_default_4J    *!Bscalar_tensor_default_7J  @@*B	div_1_minJ  †¿*B	div_1_maxJ  †@*B
+add_58_minJ  @¿*Bmemory_sizeJ    **Bcontinuous_action_output_shapeJ   @Z…
+obs_0
+
+batch
+4"=
+/pkg.torch.export.graph_signature.InputSpec.kind
+USER_INPUT"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"-
+!pkg.torch.onnx.original_node_nameinputs_0Z 
+obs_1
+
+batch
+Ç"=
+/pkg.torch.export.graph_signature.InputSpec.kind
+USER_INPUT"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"-
+!pkg.torch.onnx.original_node_nameinputs_1ZÕ
+action_masks
+
+batch
+ "=
+/pkg.torch.export.graph_signature.InputSpec.kind
+USER_INPUT"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"*
+!pkg.torch.onnx.original_node_namemasksZ‘
+recurrent_in
+
+batch
+
+ "=
+/pkg.torch.export.graph_signature.InputSpec.kind
+USER_INPUT"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"-
+!pkg.torch.onnx.original_node_namememoriesbè
+version_number
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"3
+!pkg.torch.onnx.original_node_nameversion_numberbê
+memory_size
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"7
+!pkg.torch.onnx.original_node_namememory_size_vectorbñ
+continuous_actions
+
+batch
+"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"*
+!pkg.torch.onnx.original_node_namediv_4b´
+continuous_action_output_shape
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"?
+!pkg.torch.onnx.original_node_namecontinuous_act_size_vectorb§
+ deterministic_continuous_actions
+
+batch
+"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"*
+!pkg.torch.onnx.original_node_namediv_5jè
+version_number
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"3
+!pkg.torch.onnx.original_node_nameversion_numberjç
+,network_body._body_endoder.seq_layers.0.bias
+	
+Ä"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"S
+!pkg.torch.onnx.original_node_name.p_network_body__body_endoder_seq_layers_0_biasjç
+,network_body._body_endoder.seq_layers.2.bias
+	
+Ä"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"S
+!pkg.torch.onnx.original_node_name.p_network_body__body_endoder_seq_layers_2_biasjñ
+/action_model._continuous_distribution.log_sigma
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"V
+!pkg.torch.onnx.original_node_name1p_action_model__continuous_distribution_log_sigmajó
+/action_model._continuous_distribution.mu.weight
+	
+
+Ä"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"V
+!pkg.torch.onnx.original_node_name1p_action_model__continuous_distribution_mu_weightjé
+-action_model._continuous_distribution.mu.bias
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"T
+!pkg.torch.onnx.original_node_name/p_action_model__continuous_distribution_mu_biasjì
+1network_body.processors.0.normalizer.running_mean
+
+
+4"9
+/pkg.torch.export.graph_signature.InputSpec.kindBUFFER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentTrue"X
+!pkg.torch.onnx.original_node_name3b_network_body_processors_0_normalizer_running_meanjî
+1network_body.processors.1.normalizer.running_mean
+	
+Ç"9
+/pkg.torch.export.graph_signature.InputSpec.kindBUFFER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentTrue"X
+!pkg.torch.onnx.original_node_name3b_network_body_processors_1_normalizer_running_meanjñ
+.network_body._body_endoder.seq_layers.0.weight
+
+
+Ä
+∂"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"U
+!pkg.torch.onnx.original_node_name0p_network_body__body_endoder_seq_layers_0_weightjñ
+.network_body._body_endoder.seq_layers.2.weight
+
+
+Ä
+Ä"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"U
+!pkg.torch.onnx.original_node_name0p_network_body__body_endoder_seq_layers_2_weightj⁄
+sqrt
+
+
+4"≈
+$pkg.onnxscript.optimizer.folded_fromú['convert_element_type_default', 'div', 'network_body.processors.0.normalizer.normalization_steps', 'network_body.processors.0.normalizer.running_variance']j·
+sqrt_1
+	
+Ç"…
+$pkg.onnxscript.optimizer.folded_from†['convert_element_type_default_1', 'div_2', 'network_body.processors.1.normalizer.normalization_steps', 'network_body.processors.1.normalizer.running_variance']jT
+scalar_tensor_default_4
+ "1
+$pkg.onnxscript.optimizer.folded_from	['val_6']jT
+scalar_tensor_default_7
+ "1
+$pkg.onnxscript.optimizer.folded_from	['val_8']j
+	div_1_min
+ j
+	div_1_max
+ j
+
+add_58_min
+ jê
+memory_size
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"7
+!pkg.torch.onnx.original_node_namememory_size_vectorj´
+continuous_action_output_shape
+
+
+"<
+/pkg.torch.export.graph_signature.InputSpec.kind	PARAMETER"=
+5pkg.torch.export.graph_signature.InputSpec.persistentNone"?
+0pkg.torch.export.graph_signature.OutputSpec.kindUSER_OUTPUT"?
+!pkg.torch.onnx.original_node_namecontinuous_act_size_vectorj
+sub
+
+batch
+4j
+div_1
+
+batch
+4j
+clamp
+
+batch
+4j
+sub_4
+
+batch
+Çj
+div_3
+
+batch
+Çj
+clamp_1
+
+batch
+Çj
+cat
+
+batch
+∂j
+linear
+
+batch
+Äj
+sigmoid
+
+batch
+Äj
+mul_18
+
+batch
+Äj 
+linear_1
+
+batch
+Äj!
+	sigmoid_1
+
+batch
+Äj
+mul_25
+
+batch
+Äj
+linear_2
+
+batch
+j
+mul_30
+
+batch
+j
+add_45
+
+batch
+j
+exp
+
+batch
+j!
+
+randn_like
+
+batch
+j
+mul_39
+
+batch
+j
+add_58
+
+batch
+j
+clamp_2
+
+batch
+j
+clamp_3
+
+batch
+Çç
+0pkg.torch.export.ExportedProgram.graph_signatureÿ
+# inputs
+p_version_number: PARAMETER target='version_number'
+p_is_continuous_int_deprecated: PARAMETER target='is_continuous_int_deprecated'
+p_continuous_act_size_vector: PARAMETER target='continuous_act_size_vector'
+p_discrete_act_size_vector: PARAMETER target='discrete_act_size_vector'
+p_act_size_vector_deprecated: PARAMETER target='act_size_vector_deprecated'
+p_memory_size_vector: PARAMETER target='memory_size_vector'
+p_network_body__body_endoder_seq_layers_0_weight: PARAMETER target='network_body._body_endoder.seq_layers.0.weight'
+p_network_body__body_endoder_seq_layers_0_bias: PARAMETER target='network_body._body_endoder.seq_layers.0.bias'
+p_network_body__body_endoder_seq_layers_2_weight: PARAMETER target='network_body._body_endoder.seq_layers.2.weight'
+p_network_body__body_endoder_seq_layers_2_bias: PARAMETER target='network_body._body_endoder.seq_layers.2.bias'
+p_action_model__continuous_distribution_log_sigma: PARAMETER target='action_model._continuous_distribution.log_sigma'
+p_action_model__continuous_distribution_mu_weight: PARAMETER target='action_model._continuous_distribution.mu.weight'
+p_action_model__continuous_distribution_mu_bias: PARAMETER target='action_model._continuous_distribution.mu.bias'
+b_network_body_observation_encoder_processors_0_normalizer_normalization_steps: BUFFER target='network_body.observation_encoder.processors.0.normalizer.normalization_steps' persistent=True
+b_network_body_observation_encoder_processors_0_normalizer_running_mean: BUFFER target='network_body.observation_encoder.processors.0.normalizer.running_mean' persistent=True
+b_network_body_observation_encoder_processors_0_normalizer_running_variance: BUFFER target='network_body.observation_encoder.processors.0.normalizer.running_variance' persistent=True
+b_network_body_observation_encoder_processors_1_normalizer_normalization_steps: BUFFER target='network_body.observation_encoder.processors.1.normalizer.normalization_steps' persistent=True
+b_network_body_observation_encoder_processors_1_normalizer_running_mean: BUFFER target='network_body.observation_encoder.processors.1.normalizer.running_mean' persistent=True
+b_network_body_observation_encoder_processors_1_normalizer_running_variance: BUFFER target='network_body.observation_encoder.processors.1.normalizer.running_variance' persistent=True
+b_network_body_processors_0_normalizer_normalization_steps: BUFFER target='network_body.processors.0.normalizer.normalization_steps' persistent=True
+b_network_body_processors_0_normalizer_running_mean: BUFFER target='network_body.processors.0.normalizer.running_mean' persistent=True
+b_network_body_processors_0_normalizer_running_variance: BUFFER target='network_body.processors.0.normalizer.running_variance' persistent=True
+b_network_body_processors_1_normalizer_normalization_steps: BUFFER target='network_body.processors.1.normalizer.normalization_steps' persistent=True
+b_network_body_processors_1_normalizer_running_mean: BUFFER target='network_body.processors.1.normalizer.running_mean' persistent=True
+b_network_body_processors_1_normalizer_running_variance: BUFFER target='network_body.processors.1.normalizer.running_variance' persistent=True
+inputs_0: USER_INPUT
+inputs_1: USER_INPUT
+masks: USER_INPUT
+memories: USER_INPUT
+
+# outputs
+p_version_number: USER_OUTPUT
+p_memory_size_vector: USER_OUTPUT
+div_4: USER_OUTPUT
+p_continuous_act_size_vector: USER_OUTPUT
+div_5: USER_OUTPUT
+Çr
+2pkg.torch.export.ExportedProgram.range_constraints<{s21: VR[0, int_oo], s45: VR[0, int_oo], s30: VR[0, int_oo]}B
+ 

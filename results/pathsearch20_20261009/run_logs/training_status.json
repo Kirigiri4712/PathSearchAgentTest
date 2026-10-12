@@ -1,0 +1,65 @@
+{
+    "ExplorerAgent": {
+        "checkpoints": [
+            {
+                "steps": 500006,
+                "file_path": "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-500006.onnx",
+                "reward": 5.127872839231383,
+                "creation_time": 1791487035.8590825,
+                "auxillary_file_paths": [
+                    "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-500006.pt"
+                ]
+            },
+            {
+                "steps": 999915,
+                "file_path": "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-999915.onnx",
+                "reward": 2.4828857694353377,
+                "creation_time": 1791489051.4515302,
+                "auxillary_file_paths": [
+                    "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-999915.pt"
+                ]
+            },
+            {
+                "steps": 1499872,
+                "file_path": "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-1499872.onnx",
+                "reward": 4.720822221289079,
+                "creation_time": 1791490997.6482506,
+                "auxillary_file_paths": [
+                    "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-1499872.pt"
+                ]
+            },
+            {
+                "steps": 1999937,
+                "file_path": "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-1999937.onnx",
+                "reward": 6.4050332404052215,
+                "creation_time": 1791492874.0244193,
+                "auxillary_file_paths": [
+                    "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-1999937.pt"
+                ]
+            },
+            {
+                "steps": 2450034,
+                "file_path": "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-2450034.onnx",
+                "reward": 7.855359970033168,
+                "creation_time": 1791494476.4648378,
+                "auxillary_file_paths": [
+                    "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-2450034.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 2450034,
+            "file_path": "results\\pathsearch20_20261009\\ExplorerAgent.onnx",
+            "reward": 7.855359970033168,
+            "creation_time": 1791494476.4648378,
+            "auxillary_file_paths": [
+                "results\\pathsearch20_20261009\\ExplorerAgent\\ExplorerAgent-2450034.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.11.0+cpu"
+    }
+}

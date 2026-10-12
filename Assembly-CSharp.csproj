@@ -67,6 +67,7 @@
     <Compile Include="Assets\Scripts\AgentSingleton.cs" />
     <Compile Include="Assets\Scripts\MapGenerator.cs" />
     <Compile Include="Assets\InputSystem_Actions.cs" />
+    <Compile Include="Assets\Scripts\LearnManager.cs" />
     <Compile Include="Assets\Scripts\ExplorerAgent.cs" />
   </ItemGroup>
   <ItemGroup>
