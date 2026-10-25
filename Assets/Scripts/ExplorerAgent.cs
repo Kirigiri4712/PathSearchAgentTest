@@ -235,13 +235,21 @@ public class ExplorerAgent : Agent
         {
             moveDir.Normalize();
 
-            parentRB.MovePosition(parentRB.position + moveDir * moveSpeed * Time.fixedDeltaTime);
+            // This is a dynamic Rigidbody: drive its horizontal velocity and let
+            // the physics solver resolve contacts instead of moving its position.
+            Vector3 velocity = parentRB.linearVelocity;
+            velocity.x = moveDir.x * moveSpeed;
+            velocity.z = moveDir.z * moveSpeed;
+            parentRB.linearVelocity = velocity;
 
             transform.forward = moveDir;
         }
         else
         {
-            parentRB.linearVelocity = Vector3.zero;
+            Vector3 velocity = parentRB.linearVelocity;
+            velocity.x = 0f;
+            velocity.z = 0f;
+            parentRB.linearVelocity = velocity;
         }
 
         // 3) 常時ステップペナルティ
