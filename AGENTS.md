@@ -13,7 +13,7 @@ This is a Unity 6 (`6000.3.9f1`) project for training an ML-Agents path-search a
 - Open the repository with Unity Hub using Editor `6000.3.9f1`, then load `Assets/Scenes/SampleScene.unity` and press Play for local validation.
 - `dotnet build PathSearchAgentTest.sln` performs a quick C# compilation check after Unity has generated the solution.
 - `Unity.exe -batchmode -projectPath . -runTests -testPlatform EditMode -testResults test-results.xml -quit` runs Unity Edit Mode tests from a Developer PowerShell (adjust the executable path as needed).
-- `mlagents-learn Assets/config/trainer.yaml --run-id=<name>` starts PPO training. Add `--resume` to continue a run or `--force` to replace one; never combine those flags casually.
+- Run `.\setup-mlagents-gpu.ps1` once to create the isolated CUDA training environment. Start PPO with `.\.venv-mlagents\Scripts\mlagents-learn.exe Assets/config/trainer.yaml --torch-device=cuda --run-id=<name>`. Add `--resume` to continue a run or `--force` to replace one; never combine those flags casually.
 
 ## Coding Style & Naming Conventions
 

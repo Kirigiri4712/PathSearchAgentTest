@@ -8,6 +8,8 @@ using UnityEngine.InputSystem;
 
 public class ExplorerAgent : Agent
 {
+    private static PhysicsMaterial frictionlessMovementMaterial;
+
     [SerializeField] private Rigidbody parentRB;
     private LearnManager learnManager;
 
@@ -45,6 +47,10 @@ public class ExplorerAgent : Agent
     private InputSystem_Actions inputActions;
     private Vector2 moveInput;
 
+    private readonly List<ContactPoint> collisionContactPoints = new List<ContactPoint>();
+    private readonly Dictionary<Collider, List<Vector3>> wallContactNormals =
+        new Dictionary<Collider, List<Vector3>>();
+
     private Transform goal;
     private Vector3 episodeSpawnPosition;
     private Vector3 episodeGoalPosition;
@@ -52,6 +58,36 @@ public class ExplorerAgent : Agent
     public void BindToLearnManager(LearnManager manager)
     {
         learnManager = manager;
+    }
+
+    public bool TryGetVerticalSpawnAlignment(out float bodyWorldY, out float footWorldY)
+    {
+        bodyWorldY = parentRB != null ? parentRB.position.y : transform.position.y;
+        footWorldY = bodyWorldY;
+
+        if (parentRB == null)
+        {
+            return false;
+        }
+
+        Collider[] colliders = parentRB.GetComponentsInChildren<Collider>(true);
+        bool foundBodyCollider = false;
+        foreach (Collider bodyCollider in colliders)
+        {
+            if (bodyCollider == null || !bodyCollider.enabled || bodyCollider.isTrigger ||
+                bodyCollider.attachedRigidbody != parentRB)
+            {
+                continue;
+            }
+
+            if (!foundBodyCollider || bodyCollider.bounds.min.y < footWorldY)
+            {
+                footWorldY = bodyCollider.bounds.min.y;
+                foundBodyCollider = true;
+            }
+        }
+
+        return foundBodyCollider;
     }
 
     //探索済みマップ
@@ -83,6 +119,8 @@ public class ExplorerAgent : Agent
         inputActions.Player.Move.canceled += ctx =>
             moveInput = Vector2.zero;
 
+        ConfigureFrictionlessMovement();
+
         //rb = GetComponent<Rigidbody>();
         //// 転倒防止: X,Z軸回転を固定
         //rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
@@ -90,6 +128,39 @@ public class ExplorerAgent : Agent
         //rb.linearDamping = 1.0f;
         inputActions.Player.Enable(); //これやんないとinputSystemが動かん
     }
+
+    private void ConfigureFrictionlessMovement()
+    {
+        if (parentRB == null)
+        {
+            return;
+        }
+
+        if (frictionlessMovementMaterial == null)
+        {
+            frictionlessMovementMaterial = new PhysicsMaterial("Explorer Agent Frictionless")
+            {
+                staticFriction = 0f,
+                dynamicFriction = 0f,
+                frictionCombine = PhysicsMaterialCombine.Minimum,
+                bounciness = 0f,
+                bounceCombine = PhysicsMaterialCombine.Minimum
+            };
+        }
+
+        Collider[] bodyColliders = parentRB.GetComponentsInChildren<Collider>(true);
+        foreach (Collider bodyCollider in bodyColliders)
+        {
+            if (bodyCollider == null || !bodyCollider.enabled || bodyCollider.isTrigger ||
+                bodyCollider.attachedRigidbody != parentRB)
+            {
+                continue;
+            }
+
+            bodyCollider.sharedMaterial = frictionlessMovementMaterial;
+        }
+    }
+
     void Update()
     {
         // フォールオフ判定：床下に落ちたら大きなペナルティで終了
@@ -131,6 +202,7 @@ public class ExplorerAgent : Agent
     public override void OnEpisodeBegin()
     {
         episodeEnded = false;
+        wallContactNormals.Clear();
         // ゴール到達可能になるまで遅延を挿入
         canGoal = false;
         StartCoroutine(InstantGoalLimit());
@@ -152,7 +224,15 @@ public class ExplorerAgent : Agent
         parentRB.angularVelocity = Vector3.zero;
 
         // エージェント位置・回転設定
-        parentRB.position = episodeSpawnPosition + Vector3.up * 0.5f;
+        Vector3 spawnPosition = episodeSpawnPosition;
+        if ((parentRB.constraints & RigidbodyConstraints.FreezePositionY) != 0)
+        {
+            spawnPosition.y = parentRB.position.y;
+        }
+
+        // Keep the configured vertical lock; generated maps align their floor to this height.
+        parentRB.position = spawnPosition;
+
         transform.rotation = Quaternion.Euler(0, map.SpawnRotation, 0);
 
         // 探索セル履歴初期化
@@ -235,11 +315,14 @@ public class ExplorerAgent : Agent
         {
             moveDir.Normalize();
 
+            Vector3 desiredVelocity = moveDir * moveSpeed;
+            desiredVelocity = SlideVelocityAlongWalls(desiredVelocity);
+
             // This is a dynamic Rigidbody: drive its horizontal velocity and let
             // the physics solver resolve contacts instead of moving its position.
             Vector3 velocity = parentRB.linearVelocity;
-            velocity.x = moveDir.x * moveSpeed;
-            velocity.z = moveDir.z * moveSpeed;
+            velocity.x = desiredVelocity.x;
+            velocity.z = desiredVelocity.z;
             parentRB.linearVelocity = velocity;
 
             transform.forward = moveDir;
@@ -332,8 +415,82 @@ public class ExplorerAgent : Agent
     {
         if (collision.collider.CompareTag("Wall"))
         {
+            UpdateWallContactNormals(collision);
             AddReward(wallPenalty);
         }
+    }
+
+    private void OnCollisionStay(Collision collision)
+    {
+        if (collision.collider.CompareTag("Wall"))
+        {
+            UpdateWallContactNormals(collision);
+        }
+    }
+
+    private void OnCollisionExit(Collision collision)
+    {
+        wallContactNormals.Remove(collision.collider);
+    }
+
+    private void UpdateWallContactNormals(Collision collision)
+    {
+        Collider wallCollider = collision.collider;
+        if (!wallContactNormals.TryGetValue(wallCollider, out List<Vector3> normals))
+        {
+            normals = new List<Vector3>();
+            wallContactNormals.Add(wallCollider, normals);
+        }
+
+        normals.Clear();
+        collisionContactPoints.Clear();
+        collision.GetContacts(collisionContactPoints);
+
+        Vector3 bodyCenter = parentRB.worldCenterOfMass;
+        foreach (ContactPoint contactPoint in collisionContactPoints)
+        {
+            Vector3 normal = contactPoint.normal;
+            normal.y = 0f;
+            if (normal.sqrMagnitude <= 0.001f)
+            {
+                continue;
+            }
+
+            normal.Normalize();
+            if (Vector3.Dot(normal, bodyCenter - contactPoint.point) < 0f)
+            {
+                normal = -normal;
+            }
+
+            normals.Add(normal);
+        }
+
+        if (normals.Count == 0)
+        {
+            wallContactNormals.Remove(wallCollider);
+        }
+    }
+
+    private Vector3 SlideVelocityAlongWalls(Vector3 desiredVelocity)
+    {
+        // Remove only velocity directed into a wall. Tangential and outward
+        // movement remain available, including when both action axes are used.
+        for (int pass = 0; pass < 2; pass++)
+        {
+            foreach (List<Vector3> normals in wallContactNormals.Values)
+            {
+                foreach (Vector3 normal in normals)
+                {
+                    float velocityIntoWall = Vector3.Dot(desiredVelocity, normal);
+                    if (velocityIntoWall < 0f)
+                    {
+                        desiredVelocity -= normal * velocityIntoWall;
+                    }
+                }
+            }
+        }
+
+        return desiredVelocity;
     }
 
     private void OnTriggerEnter(Collider other)

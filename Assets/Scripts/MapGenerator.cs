@@ -50,7 +50,13 @@ public class MapGenerator : MonoBehaviour
         Vector2Int.right
     };
 
-    public GeneratedMap Generate(int width, int height, int waypointCount, int seed)
+    public GeneratedMap Generate(
+        int width,
+        int height,
+        int waypointCount,
+        int seed,
+        float playerLocalY,
+        float floorSurfaceLocalY)
     {
         width = Mathf.Max(5, width);
         height = Mathf.Max(5, height);
@@ -118,14 +124,14 @@ public class MapGenerator : MonoBehaviour
         walkable[playerPos.x, playerPos.y] = true;
         walkable[goalPos.x, goalPos.y] = true;
 
-        BuildMap();
+        BuildMap(playerLocalY, floorSurfaceLocalY);
 
         GameObject goal = Instantiate(goalPrefab, mapRoot);
-        goal.transform.localPosition = GridToLocal(goalPos);
+        goal.transform.localPosition = GridToLocal(goalPos, playerLocalY + 0.5f);
         goal.transform.localRotation = Quaternion.identity;
 
         return new GeneratedMap(
-            transform.TransformPoint(GridToLocal(playerPos)),
+            transform.TransformPoint(GridToLocal(playerPos, playerLocalY)),
             goal.transform.position,
             (float)random.NextDouble() * 360f);
     }
@@ -189,26 +195,47 @@ public class MapGenerator : MonoBehaviour
         return result;
     }
 
-    private void BuildMap()
+    private void BuildMap(float playerLocalY, float floorSurfaceLocalY)
     {
+        float floorMeshBottomOffset = GetFloorMeshBottomOffset();
+
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                GameObject prefab = walkable[x, y]
-                    ? floorPrefab
-                    : wallPrefab;
+                bool isWalkable = walkable[x, y];
+                GameObject prefab = isWalkable ? floorPrefab : wallPrefab;
 
                 GameObject tile = Instantiate(prefab, mapRoot);
-                tile.transform.localPosition = new Vector3(x, 0f, y);
+                float tileLocalY = isWalkable
+                    ? floorSurfaceLocalY - floorMeshBottomOffset
+                    : playerLocalY;
+                tile.transform.localPosition = new Vector3(x, tileLocalY, y);
                 tile.transform.localRotation = Quaternion.identity;
             }
         }
     }
 
-    private Vector3 GridToLocal(Vector2Int pos)
+    private float GetFloorMeshBottomOffset()
     {
-        return new Vector3(pos.x, 0.5f, pos.y);
+        MeshFilter floorMeshFilter = floorPrefab.GetComponent<MeshFilter>();
+        if (floorMeshFilter != null && floorMeshFilter.sharedMesh != null)
+        {
+            return floorMeshFilter.sharedMesh.bounds.min.y * floorPrefab.transform.localScale.y;
+        }
+
+        MeshCollider floorMeshCollider = floorPrefab.GetComponent<MeshCollider>();
+        if (floorMeshCollider != null && floorMeshCollider.sharedMesh != null)
+        {
+            return floorMeshCollider.sharedMesh.bounds.min.y * floorPrefab.transform.localScale.y;
+        }
+
+        return 0f;
+    }
+
+    private Vector3 GridToLocal(Vector2Int pos, float localY)
+    {
+        return new Vector3(pos.x, localY, pos.y);
     }
 
     // =========================

@@ -447,7 +447,7 @@ MonoBehaviour:
   mapGeneratorPrefab: {fileID: 4724328639352873531, guid: 74afc9412b359f04e84500aa89175307, type: 3}
   explorerAgentPrefab: {fileID: 8936137150524270495, guid: 631d84fe75efbaf40bf85184655f2fc6, type: 3}
   operationMode: 0
-  testModel: {fileID: 5022602860645237092, guid: fdf5994c7463ee64fa09deef2db1f4d2, type: 3}
+  testModel: {fileID: 0}
   deterministicTestInference: 1
   mapWidth: 5
   mapHeight: 5
@@ -457,8 +457,8 @@ MonoBehaviour:
   testSeedMaximum: 1000
   useFixedTestSeed: 0
   fixedTestSeed: 1
-  trainingAreaCount: 20
-  areaColumns: 4
+  trainingAreaCount: 100
+  areaColumns: 10
   maximumMapWidth: 50
   maximumMapHeight: 50
   maximumWaypointCount: 20
@@ -466,6 +466,7 @@ MonoBehaviour:
   automaticCurriculum: 1
   successRateWindow: 20
   successesRequiredToAdvance: 18
+  successesRequiredToRegress: 10
   mapWidthIncreasePerLevel: 2
   mapHeightIncreasePerLevel: 2
   waypointIncreaseEveryLevels: 3

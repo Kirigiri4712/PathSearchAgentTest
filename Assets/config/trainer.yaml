@@ -2,7 +2,7 @@ behaviors:
   ExplorerAgent:
     trainer_type: ppo
 
-    max_steps: 500000
+    max_steps: 10000000
 
     time_horizon: 128
     summary_freq: 10000
