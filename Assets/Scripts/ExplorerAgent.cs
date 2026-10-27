@@ -32,9 +32,29 @@ public class ExplorerAgent : Agent
     [Header("Exploration")]
     [Tooltip("探索報酬対象セルサイズ（大きめにしてノイズ軽減）")]public float visitedCellSize = 2.5f; // 探索報酬対象セルサイズ（大きめにしてノイズ軽減）
 
+    [Header("Movement History Observation")]
+    [Tooltip("直近の移動距離を集計するOnActionReceived呼び出し数。DecisionPeriod=5なら100で約20回の判断分です。")]
+    [SerializeField, Min(1)] private int movementHistoryWindowSteps = 100;
+    private const int VisitCountObservationCap = 3;
+    private readonly Dictionary<Vector2Int, int> visitCountByCell =
+        new Dictionary<Vector2Int, int>();
+    private Vector2Int lastVisitCountCell;
+    private bool hasLastVisitCountCell;
+    private readonly Queue<Vector2> recentPlanarDisplacements = new Queue<Vector2>();
+    private float recentPlanarTravelDistance;
+    private Vector2 recentPlanarNetDisplacement;
+
     [Header("Vision")]
     [Tooltip("視界として情報を入手可能な距離。RayPerceptionSensor3Dとは別")]public float visionDistance = 15f;
     [Tooltip("視界として情報を入手可能な角度制限")]public float visionAngle = 90f;
+
+    [Header("Stuck Diagnostics")]
+    [Tooltip("停滞診断を有効化します。並列学習ではログが増えるため、必要なときだけ有効にしてください。")]
+    [SerializeField] private bool enableStuckDiagnostics;
+    [Tooltip("この回数分の行動履歴を使って、往復を含む停滞を判定します。")]
+    [SerializeField, Min(2)] private int stuckDiagnosticWindowActionCount = 10;
+    [Tooltip("履歴区間の正味移動がこの距離未満なら停滞候補とします。")]
+    [SerializeField, Min(0.01f)] private float stuckDiagnosticNetDisplacementThreshold = 0.25f;
 
     //private Rigidbody rb;
     private HashSet<Vector2Int> visitedCells = new HashSet<Vector2Int>();
@@ -107,6 +127,36 @@ public class ExplorerAgent : Agent
     private int actionSampleCount;
     private float actionXAbsSum;
     private float actionZAbsSum;
+    private readonly List<StuckDiagnosticSample> recentStuckDiagnosticSamples =
+        new List<StuckDiagnosticSample>();
+    private bool stuckDiagnosticLogged;
+    private bool hasPreviousDiagnosticAction;
+    private Vector2 previousDiagnosticAction;
+    private Vector3 previousRequestedVelocity;
+    private Vector3 previousWallCorrectedVelocity;
+
+    private struct StuckDiagnosticSample
+    {
+        public Vector3 Position { get; }
+        public Vector3 Displacement { get; }
+        public Vector2 Action { get; }
+        public Vector3 RequestedVelocity { get; }
+        public Vector3 WallCorrectedVelocity { get; }
+
+        public StuckDiagnosticSample(
+            Vector3 position,
+            Vector3 displacement,
+            Vector2 action,
+            Vector3 requestedVelocity,
+            Vector3 wallCorrectedVelocity)
+        {
+            Position = position;
+            Displacement = displacement;
+            Action = action;
+            RequestedVelocity = requestedVelocity;
+            WallCorrectedVelocity = wallCorrectedVelocity;
+        }
+    }
 
     // ゲーム開始時に呼ばれる
     void Awake()
@@ -203,6 +253,7 @@ public class ExplorerAgent : Agent
     {
         episodeEnded = false;
         wallContactNormals.Clear();
+        ResetStuckDiagnostics();
         // ゴール到達可能になるまで遅延を挿入
         canGoal = false;
         StartCoroutine(InstantGoalLimit());
@@ -237,8 +288,11 @@ public class ExplorerAgent : Agent
 
         // 探索セル履歴初期化
         visitedCells.Clear();
+        visitCountByCell.Clear();
+        hasLastVisitCountCell = false;
         memoryMap.Clear();
         RegisterVisited(transform.position);
+        ResetMovementHistory();
 
         // ループ用変数リセット
         stepCount = 0;
@@ -291,14 +345,27 @@ public class ExplorerAgent : Agent
         sensor.AddObservation(visitedCells.Count / 1000f);
 
         AddMemoryObservation(sensor);
+        AddVisitCountObservation(sensor);
+        AddMovementHistoryObservation(sensor);
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
+        UpdateMovementHistory();
         UpdateMemoryFromRaycasts();
 
         float x = actions.ContinuousActions[0];
         float z = actions.ContinuousActions[1];
+        Vector2 rawAction = new Vector2(x, z);
+
+        if (enableStuckDiagnostics)
+        {
+            UpdateStuckDiagnostics(rawAction);
+        }
+        else
+        {
+            ResetStuckDiagnostics();
+        }
 
 
 
@@ -310,19 +377,21 @@ public class ExplorerAgent : Agent
 
 
         Vector3 moveDir = new Vector3(x, 0f, z);
+        Vector3 requestedVelocity = Vector3.zero;
+        Vector3 wallCorrectedVelocity = Vector3.zero;
 
         if (moveDir.sqrMagnitude > 0.001f)
         {
             moveDir.Normalize();
 
-            Vector3 desiredVelocity = moveDir * moveSpeed;
-            desiredVelocity = SlideVelocityAlongWalls(desiredVelocity);
+            requestedVelocity = moveDir * moveSpeed;
+            wallCorrectedVelocity = SlideVelocityAlongWalls(requestedVelocity);
 
             // This is a dynamic Rigidbody: drive its horizontal velocity and let
             // the physics solver resolve contacts instead of moving its position.
             Vector3 velocity = parentRB.linearVelocity;
-            velocity.x = desiredVelocity.x;
-            velocity.z = desiredVelocity.z;
+            velocity.x = wallCorrectedVelocity.x;
+            velocity.z = wallCorrectedVelocity.z;
             parentRB.linearVelocity = velocity;
 
             transform.forward = moveDir;
@@ -335,14 +404,23 @@ public class ExplorerAgent : Agent
             parentRB.linearVelocity = velocity;
         }
 
+        if (enableStuckDiagnostics)
+        {
+            previousDiagnosticAction = rawAction;
+            previousRequestedVelocity = requestedVelocity;
+            previousWallCorrectedVelocity = wallCorrectedVelocity;
+            hasPreviousDiagnosticAction = true;
+        }
+
         // 3) 常時ステップペナルティ
         AddReward(stepPenalty);
 
         // 4) 新規セル探索報酬
         Vector2Int cell = WorldToCell(transform.position);
-        if (!visitedCells.Contains(cell))
+        bool firstVisit = visitedCells.Add(cell);
+        RecordCellVisit(cell);
+        if (firstVisit)
         {
-            visitedCells.Add(cell);
             AddReward(foundGoal ? exploreRewardAfterGoalVisible : exploreReward);
         }
 
@@ -493,6 +571,130 @@ public class ExplorerAgent : Agent
         return desiredVelocity;
     }
 
+    private void UpdateStuckDiagnostics(Vector2 currentAction)
+    {
+        Vector3 currentPosition = transform.position;
+        Vector3 displacement = currentPosition - lastPosition;
+        if (hasPreviousDiagnosticAction)
+        {
+            recentStuckDiagnosticSamples.Add(new StuckDiagnosticSample(
+                currentPosition,
+                displacement,
+                previousDiagnosticAction,
+                previousRequestedVelocity,
+                previousWallCorrectedVelocity));
+        }
+
+        int windowActionCount = Mathf.Max(2, stuckDiagnosticWindowActionCount);
+        while (recentStuckDiagnosticSamples.Count > windowActionCount)
+        {
+            recentStuckDiagnosticSamples.RemoveAt(0);
+        }
+
+        if (recentStuckDiagnosticSamples.Count < windowActionCount)
+        {
+            return;
+        }
+
+        Vector3 windowStartPosition =
+            recentStuckDiagnosticSamples[0].Position - recentStuckDiagnosticSamples[0].Displacement;
+        Vector3 netDisplacement = recentStuckDiagnosticSamples[windowActionCount - 1].Position -
+            windowStartPosition;
+        float netPlanarDistance = new Vector2(netDisplacement.x, netDisplacement.z).magnitude;
+        float totalPlanarTravel = 0f;
+        foreach (StuckDiagnosticSample sample in recentStuckDiagnosticSamples)
+        {
+            totalPlanarTravel += new Vector2(sample.Displacement.x, sample.Displacement.z).magnitude;
+        }
+
+        if (netPlanarDistance >= Mathf.Max(0.01f, stuckDiagnosticNetDisplacementThreshold))
+        {
+            stuckDiagnosticLogged = false;
+            return;
+        }
+
+        if (stuckDiagnosticLogged)
+        {
+            return;
+        }
+
+        Debug.LogWarning(
+            $"[StuckDiagnostic] Agent={name}, step={stepCount}, " +
+            $"windowActions={windowActionCount}, netPlanarDisplacement={netPlanarDistance:F3}m, " +
+            $"totalPlanarTravel={totalPlanarTravel:F3}m, position={parentRB.position}, " +
+            $"forward={transform.forward}, " +
+            $"movementHistory={FormatStuckDiagnosticSamples()}, " +
+            $"currentAction={FormatAction(currentAction)}, " +
+            $"rigidbodyVelocity={FormatPlanarVelocity(parentRB.linearVelocity)}, " +
+            $"foundGoal={foundGoal}, visitedCells={visitedCells.Count}, " +
+            $"wallContacts={FormatWallContactNormals()}",
+            this);
+
+        stuckDiagnosticLogged = true;
+    }
+
+    private void ResetStuckDiagnostics()
+    {
+        recentStuckDiagnosticSamples.Clear();
+        stuckDiagnosticLogged = false;
+        hasPreviousDiagnosticAction = false;
+        previousDiagnosticAction = Vector2.zero;
+        previousRequestedVelocity = Vector3.zero;
+        previousWallCorrectedVelocity = Vector3.zero;
+    }
+
+    private string FormatStuckDiagnosticSamples()
+    {
+        List<string> samples = new List<string>(recentStuckDiagnosticSamples.Count);
+        foreach (StuckDiagnosticSample sample in recentStuckDiagnosticSamples)
+        {
+            samples.Add(
+                $"a={FormatAction(sample.Action)} " +
+                $"req={FormatPlanarVelocity(sample.RequestedVelocity)} " +
+                $"slide={FormatPlanarVelocity(sample.WallCorrectedVelocity)} " +
+                $"d=({sample.Displacement.x:F3},{sample.Displacement.z:F3})");
+        }
+
+        return string.Join(" | ", samples);
+    }
+
+    private string FormatWallContactNormals()
+    {
+        if (wallContactNormals.Count == 0)
+        {
+            return "none";
+        }
+
+        List<string> contacts = new List<string>();
+        foreach (KeyValuePair<Collider, List<Vector3>> entry in wallContactNormals)
+        {
+            if (entry.Key == null || entry.Value.Count == 0)
+            {
+                continue;
+            }
+
+            List<string> normals = new List<string>();
+            foreach (Vector3 normal in entry.Value)
+            {
+                normals.Add($"({normal.x:F2},{normal.z:F2})");
+            }
+
+            contacts.Add($"{entry.Key.name}:[{string.Join(",", normals)}]");
+        }
+
+        return contacts.Count == 0 ? "none" : string.Join(";", contacts);
+    }
+
+    private static string FormatAction(Vector2 action)
+    {
+        return $"({action.x:F3},{action.y:F3})";
+    }
+
+    private static string FormatPlanarVelocity(Vector3 velocity)
+    {
+        return $"({velocity.x:F3},{velocity.z:F3})";
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (!canGoal) return;
@@ -543,8 +745,26 @@ public class ExplorerAgent : Agent
         Vector2Int cell = WorldToCell(pos);
 
         visitedCells.Add(cell);
+        visitCountByCell[cell] = 1;
+        lastVisitCountCell = cell;
+        hasLastVisitCountCell = true;
 
         memoryMap[cell] = MemoryCell.Empty;
+    }
+
+    private void RecordCellVisit(Vector2Int cell)
+    {
+        if (hasLastVisitCountCell && cell == lastVisitCountCell)
+        {
+            return;
+        }
+
+        visitCountByCell.TryGetValue(cell, out int currentVisitCount);
+        visitCountByCell[cell] = Mathf.Min(
+            currentVisitCount + 1,
+            VisitCountObservationCap);
+        lastVisitCountCell = cell;
+        hasLastVisitCountCell = true;
     }
 
     private Vector2Int WorldToCell(Vector3 pos)
@@ -629,6 +849,64 @@ public class ExplorerAgent : Agent
                 }
             }
         }
+    }
+
+    private void AddVisitCountObservation(VectorSensor sensor, int radius = 5)
+    {
+        Vector2Int center = WorldToCell(transform.position);
+
+        for (int z = -radius; z <= radius; z++)
+        {
+            for (int x = -radius; x <= radius; x++)
+            {
+                Vector2Int cell = new Vector2Int(center.x + x, center.y + z);
+                visitCountByCell.TryGetValue(cell, out int visitCount);
+                sensor.AddObservation(
+                    Mathf.Clamp01((float)visitCount / VisitCountObservationCap));
+            }
+        }
+    }
+
+    private void UpdateMovementHistory()
+    {
+        Vector3 displacement = transform.position - lastPosition;
+        Vector2 planarDisplacement = new Vector2(displacement.x, displacement.z);
+        recentPlanarDisplacements.Enqueue(planarDisplacement);
+        recentPlanarTravelDistance += planarDisplacement.magnitude;
+        recentPlanarNetDisplacement += planarDisplacement;
+
+        int windowSteps = Mathf.Max(1, movementHistoryWindowSteps);
+        while (recentPlanarDisplacements.Count > windowSteps)
+        {
+            Vector2 expiredDisplacement = recentPlanarDisplacements.Dequeue();
+            recentPlanarTravelDistance -= expiredDisplacement.magnitude;
+            recentPlanarNetDisplacement -= expiredDisplacement;
+        }
+
+        recentPlanarTravelDistance = Mathf.Max(0f, recentPlanarTravelDistance);
+    }
+
+    private void ResetMovementHistory()
+    {
+        recentPlanarDisplacements.Clear();
+        recentPlanarTravelDistance = 0f;
+        recentPlanarNetDisplacement = Vector2.zero;
+    }
+
+    private void AddMovementHistoryObservation(VectorSensor sensor)
+    {
+        int windowSteps = Mathf.Max(1, movementHistoryWindowSteps);
+        float maximumWindowDistance = Mathf.Max(
+            moveSpeed * Time.fixedDeltaTime * windowSteps,
+            0.001f);
+        float normalizedTravelDistance = Mathf.Clamp01(
+            recentPlanarTravelDistance / maximumWindowDistance);
+        float movementEfficiency = recentPlanarTravelDistance > 0.001f
+            ? Mathf.Clamp01(recentPlanarNetDisplacement.magnitude / recentPlanarTravelDistance)
+            : 0f;
+
+        sensor.AddObservation(normalizedTravelDistance);
+        sensor.AddObservation(movementEfficiency);
     }
 
     // デバッグ：訪問セルを描画（エディタ画面で可視化）

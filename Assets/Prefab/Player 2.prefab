@@ -68,8 +68,12 @@ MonoBehaviour:
   wallPenalty: 0
   rotatePenalty: 0
   visitedCellSize: 1
+  movementHistoryWindowSteps: 100
   visionDistance: 10
   visionAngle: 70
+  enableStuckDiagnostics: 1
+  stuckDiagnosticWindowActionCount: 10
+  stuckDiagnosticNetDisplacementThreshold: 0.25
   maxStep: 5000
 --- !u!114 &2799396490389339251
 MonoBehaviour:
@@ -114,7 +118,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.Policies.BehaviorParameters
   m_BrainParameters:
-    VectorObservationSize: 130
+    VectorObservationSize: 253
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 2
