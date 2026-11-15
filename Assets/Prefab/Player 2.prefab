@@ -71,6 +71,7 @@ MonoBehaviour:
   movementHistoryWindowSteps: 100
   visionDistance: 10
   visionAngle: 70
+  visibleTileScanInterval: 5
   enableStuckDiagnostics: 1
   stuckDiagnosticWindowActionCount: 10
   stuckDiagnosticNetDisplacementThreshold: 0.25
@@ -118,7 +119,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.ML-Agents::Unity.MLAgents.Policies.BehaviorParameters
   m_BrainParameters:
-    VectorObservationSize: 253
+    VectorObservationSize: 573
     NumStackedVectorObservations: 1
     m_ActionSpec:
       m_NumContinuousActions: 2

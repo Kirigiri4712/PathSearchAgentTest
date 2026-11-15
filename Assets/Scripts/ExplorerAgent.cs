@@ -55,6 +55,9 @@ public class ExplorerAgent : Agent
     [Header("Vision")]
     [Tooltip("視界として情報を入手可能な距離。RayPerceptionSensor3Dとは別")]public float visionDistance = 15f;
     [Tooltip("視界として情報を入手可能な角度制限")]public float visionAngle = 90f;
+    [Tooltip("視認済みタイルを更新する行動間隔。並列学習時のRaycast負荷を抑えます。")]
+    [SerializeField, Min(1)] private int visibleTileScanInterval = 5;
+    private int actionsSinceVisibleTileScan;
 
     [Header("Stuck Diagnostics")]
     [Tooltip("停滞診断を有効化します。並列学習ではログが増えるため、必要なときだけ有効にしてください。")]
@@ -300,6 +303,7 @@ public class ExplorerAgent : Agent
         hasLastVisitCountCell = false;
         memoryMap.Clear();
         RegisterVisited(transform.position);
+        actionsSinceVisibleTileScan = Mathf.Max(0, visibleTileScanInterval - 1);
         ResetMovementHistory();
 
         // ループ用変数リセット
@@ -352,7 +356,7 @@ public class ExplorerAgent : Agent
         // 探索進捗
         sensor.AddObservation(visitedCells.Count / 1000f);
 
-        AddMemoryObservation(sensor);
+        AddMemoryObservation(sensor, GetMemoryObservationRadius());
         AddVisitCountObservation(sensor);
         AddMovementHistoryObservation(sensor);
     }
@@ -360,7 +364,12 @@ public class ExplorerAgent : Agent
     public override void OnActionReceived(ActionBuffers actions)
     {
         UpdateMovementHistory();
-        UpdateMemoryFromRaycasts();
+        actionsSinceVisibleTileScan++;
+        if (actionsSinceVisibleTileScan >= Mathf.Max(1, visibleTileScanInterval))
+        {
+            actionsSinceVisibleTileScan = 0;
+            UpdateMemoryFromRaycasts();
+        }
 
         float x = actions.ContinuousActions[0];
         float z = actions.ContinuousActions[1];
@@ -828,36 +837,84 @@ public class ExplorerAgent : Agent
 
     private void UpdateMemoryFromRaycasts()
     {
-        float rayLength = 15f;
-
-        Vector3[] directions =
+        float cellSize = Mathf.Max(0.1f, visitedCellSize);
+        float sightDistance = Mathf.Max(0f, visionDistance);
+        if (sightDistance <= 0f)
         {
-        transform.forward,
-        (transform.forward + transform.right).normalized,
-        transform.right,
-        (-transform.forward + transform.right).normalized,
-        -transform.forward,
-        (-transform.forward - transform.right).normalized,
-        -transform.right,
-        (transform.forward - transform.right).normalized
-    };
+            return;
+        }
 
-        Vector3 start = transform.position + Vector3.up * 0.5f;
-
-        foreach (var dir in directions)
+        Vector3 eyePosition = transform.position + Vector3.up * 0.5f;
+        Vector3 forward = transform.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude <= 0.001f)
         {
-            if (Physics.Raycast(start, dir, out RaycastHit hit, rayLength))
+            return;
+        }
+
+        forward.Normalize();
+        float halfAngle = Mathf.Clamp(visionAngle, 0f, 360f) * 0.5f;
+        float minimumForwardDot = Mathf.Cos(halfAngle * Mathf.Deg2Rad);
+        int radius = Mathf.CeilToInt(sightDistance / cellSize);
+        Vector2Int centerCell = WorldToCell(transform.position);
+
+        for (int z = -radius; z <= radius; z++)
+        {
+            for (int x = -radius; x <= radius; x++)
             {
-                if (hit.collider.CompareTag("Wall"))
+                Vector2Int cell = new Vector2Int(centerCell.x + x, centerCell.y + z);
+                Vector3 cellCenter = new Vector3(
+                    cell.x * cellSize,
+                    eyePosition.y,
+                    cell.y * cellSize);
+                Vector3 toCell = cellCenter - eyePosition;
+                toCell.y = 0f;
+                float distance = toCell.magnitude;
+                if (distance <= 0.01f || distance > sightDistance)
                 {
-                    Vector2Int wallCell =
-                        WorldToCell(hit.point);
-
-                    memoryMap[wallCell] =
-                        MemoryCell.Wall;
+                    continue;
                 }
+
+                Vector3 direction = toCell / distance;
+                if (Vector3.Dot(forward, direction) < minimumForwardDot)
+                {
+                    continue;
+                }
+
+                if (Physics.Raycast(
+                        eyePosition,
+                        direction,
+                        out RaycastHit hit,
+                        distance,
+                        Physics.DefaultRaycastLayers,
+                        QueryTriggerInteraction.Ignore))
+                {
+                    if (hit.collider.CompareTag("Wall"))
+                    {
+                        // Nudge into the wall so the face hit maps to its tile,
+                        // not the adjacent floor tile.
+                        Vector3 wallPoint = hit.point + direction * (cellSize * 0.02f);
+                        Vector2Int wallCell = new Vector2Int(
+                            Mathf.RoundToInt(wallPoint.x / cellSize),
+                            Mathf.RoundToInt(wallPoint.z / cellSize));
+                        memoryMap[wallCell] = MemoryCell.Wall;
+                    }
+
+                    // An obstruction means the candidate tile is not visible.
+                    continue;
+                }
+
+                // A clear line to the tile center reveals walkable floor.
+                // Rewards are unchanged and cells behind walls remain unknown.
+                memoryMap[cell] = MemoryCell.Empty;
             }
         }
+    }
+
+    private int GetMemoryObservationRadius()
+    {
+        float cellSize = Mathf.Max(0.1f, visitedCellSize);
+        return Mathf.Max(1, Mathf.CeilToInt(Mathf.Max(0f, visionDistance) / cellSize));
     }
 
     private void AddMemoryObservation(
