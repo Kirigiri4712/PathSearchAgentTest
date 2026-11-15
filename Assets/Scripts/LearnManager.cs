@@ -10,6 +10,26 @@ using UnityEngine;
 /// </summary>
 public class LearnManager : MonoBehaviour
 {
+    [Serializable]
+    public sealed class InferenceFailureRecord
+    {
+        public int seed;
+        public int areaIndex;
+        public string agent;
+        public string layout;
+        public int mapWidth;
+        public int mapHeight;
+        public int waypointCount;
+        public string endReason;
+        public int steps;
+        public Vector3 spawnPosition;
+        public Vector3 goalPosition;
+        public Vector3 finalPosition;
+        public Vector3 finalVelocity;
+        public int visitedCellCount;
+        public string map;
+    }
+
     private enum OperationMode
     {
         Training,
@@ -27,6 +47,11 @@ public class LearnManager : MonoBehaviour
     [SerializeField] private ModelAsset testModel;
     [Tooltip("Use deterministic model actions so repeated seed tests are reproducible.")]
     [SerializeField] private bool deterministicTestInference = true;
+    [Tooltip("Map topology used only for single-agent inference tests. Training always uses the current corridor layout.")]
+    [SerializeField] private MapLayoutMode inferenceTestMapLayout = MapLayoutMode.PathCorridor;
+    [SerializeField, Min(1)] private int inferenceTestAreaCount = 4;
+    [SerializeField, Min(1)] private int inferenceTestAreaColumns = 2;
+    [SerializeField, Min(1f)] private float inferenceTestTimeScale = 5f;
 
     [Header("Initial Map Complexity")]
     [SerializeField, Min(5)] private int mapWidth = 5;
@@ -65,6 +90,8 @@ public class LearnManager : MonoBehaviour
     [SerializeField, Min(1)] private int waypointIncreaseAmount = 1;
 
     private readonly List<TrainingArea> trainingAreas = new List<TrainingArea>();
+    private readonly List<InferenceFailureRecord> inferenceFailures =
+        new List<InferenceFailureRecord>();
     private readonly Dictionary<ExplorerAgent, TrainingArea> areaByAgent =
         new Dictionary<ExplorerAgent, TrainingArea>();
     private System.Random randomTrainingSeedGenerator;
@@ -73,6 +100,8 @@ public class LearnManager : MonoBehaviour
     private int curriculumBaseWaypointCount;
     private int nextTestSeed;
     private bool testRunComplete;
+    private float previousTimeScale = 1f;
+    private bool changedTimeScale;
 
     public int CompletedEpisodes { get; private set; }
     public float RecentSuccessRate { get; private set; }
@@ -83,6 +112,34 @@ public class LearnManager : MonoBehaviour
     public float TestSuccessRate { get; private set; }
     public bool IsTestRunComplete => testRunComplete;
     public bool IsInferenceTestMode => operationMode == OperationMode.InferenceTest;
+    public IReadOnlyList<InferenceFailureRecord> InferenceFailures => inferenceFailures;
+
+#if UNITY_EDITOR
+    public void ConfigureInferenceTestForEditor(
+        ModelAsset model,
+        MapLayoutMode mapLayout,
+        int areaCount,
+        int columns,
+        float timeScale,
+        int seedMinimum,
+        int seedMaximum,
+        int testMapWidth,
+        int testMapHeight)
+    {
+        operationMode = OperationMode.InferenceTest;
+        testModel = model;
+        deterministicTestInference = true;
+        inferenceTestMapLayout = mapLayout;
+        inferenceTestAreaCount = areaCount;
+        inferenceTestAreaColumns = columns;
+        inferenceTestTimeScale = timeScale;
+        testSeedMinimum = seedMinimum;
+        testSeedMaximum = seedMaximum;
+        mapWidth = testMapWidth;
+        mapHeight = testMapHeight;
+        automaticCurriculum = false;
+    }
+#endif
 
     private sealed class TrainingArea
     {
@@ -143,11 +200,12 @@ public class LearnManager : MonoBehaviour
                 return;
             }
 
-            // Evaluation uses one policy instance, a fixed difficulty, and each
-            // reserved seed exactly once. It must not advance the training curriculum.
-            trainingAreaCount = 1;
-            areaColumns = 1;
+            // Evaluation uses one shared policy, a fixed difficulty, and each
+            // reserved seed exactly once. It must not advance the curriculum.
             automaticCurriculum = false;
+            previousTimeScale = Time.timeScale;
+            Time.timeScale = Mathf.Max(1f, inferenceTestTimeScale);
+            changedTimeScale = true;
         }
 
         if (randomSeed == 0)
@@ -188,13 +246,18 @@ public class LearnManager : MonoBehaviour
         float floorSurfaceLocalY = mapTransform.InverseTransformPoint(
             new Vector3(mapOrigin.x, footWorldY, mapOrigin.z)).y;
 
+        MapLayoutMode layoutMode = IsInferenceTestMode
+            ? inferenceTestMapLayout
+            : MapLayoutMode.PathCorridor;
+
         return area.MapGenerator.Generate(
             mapWidth,
             mapHeight,
             waypointCount,
             seed,
             playerLocalY,
-            floorSurfaceLocalY);
+            floorSurfaceLocalY,
+            layoutMode);
     }
 
     /// <summary>
@@ -213,7 +276,16 @@ public class LearnManager : MonoBehaviour
         ClearCurriculumWindows();
     }
 
-    public bool RecordEpisodeResult(ExplorerAgent agent, bool reachedGoal)
+    public bool RecordEpisodeResult(
+        ExplorerAgent agent,
+        bool reachedGoal,
+        string endReason,
+        int steps,
+        Vector3 spawnPosition,
+        Vector3 goalPosition,
+        Vector3 finalPosition,
+        Vector3 finalVelocity,
+        int visitedCellCount)
     {
         if (!areaByAgent.TryGetValue(agent, out TrainingArea area))
         {
@@ -225,6 +297,39 @@ public class LearnManager : MonoBehaviour
 
         if (IsInferenceTestMode)
         {
+            if (!reachedGoal)
+            {
+                int areaIndex = trainingAreas.IndexOf(area);
+                MapGenerator mapGenerator = area.MapGenerator;
+                InferenceFailureRecord failure = new InferenceFailureRecord
+                {
+                    seed = area.ActiveSeed,
+                    areaIndex = areaIndex,
+                    agent = agent.name,
+                    layout = mapGenerator.LastLayoutMode.ToString(),
+                    mapWidth = mapGenerator.Width,
+                    mapHeight = mapGenerator.Height,
+                    waypointCount = mapGenerator.WaypointCount,
+                    endReason = endReason,
+                    steps = steps,
+                    spawnPosition = spawnPosition,
+                    goalPosition = goalPosition,
+                    finalPosition = finalPosition,
+                    finalVelocity = finalVelocity,
+                    visitedCellCount = visitedCellCount,
+                    map = mapGenerator.CreateDiagnosticMapSnapshot()
+                };
+                inferenceFailures.Add(failure);
+                Debug.LogWarning(
+                    $"[Inference Test Failure] Seed={failure.seed}, layout={failure.layout}, " +
+                    $"map={failure.mapWidth}x{failure.mapHeight}, waypoints={failure.waypointCount}, " +
+                    $"reason={failure.endReason}, steps={failure.steps}, " +
+                    $"finalPosition={failure.finalPosition}, velocity={failure.finalVelocity}, " +
+                    $"visitedCells={failure.visitedCellCount}.\n" +
+                    failure.map,
+                    this);
+            }
+
             TestEpisodesCompleted++;
             if (reachedGoal)
             {
@@ -236,6 +341,7 @@ public class LearnManager : MonoBehaviour
             int totalTestSeeds = testSeedMaximum - testSeedMinimum + 1;
             Debug.Log(
                 $"[Inference Test] Seed {area.ActiveSeed}: {(reachedGoal ? "SUCCESS" : "FAIL")} " +
+                $"reason={endReason}, steps={steps} " +
                 $"({TestEpisodesCompleted}/{totalTestSeeds}), success rate {TestSuccessRate:P1}.",
                 this);
 
@@ -246,10 +352,12 @@ public class LearnManager : MonoBehaviour
                     $"[Inference Test Complete] Seeds {testSeedMinimum}-{testSeedMaximum}: " +
                     $"{TestSuccesses}/{TestEpisodesCompleted} successes ({TestSuccessRate:P1}).",
                     this);
-                return true;
+                RestoreTimeScale();
             }
 
-            return false;
+            // Once every seed has been assigned, completed agents must stay
+            // parked while the remaining in-flight seeds finish.
+            return testRunComplete || nextTestSeed > testSeedMaximum;
         }
 
         // Episodes already in progress at the previous level must not affect the
@@ -359,18 +467,21 @@ public class LearnManager : MonoBehaviour
             return;
         }
 
-        trainingAreaCount = Mathf.Max(1, trainingAreaCount);
-        areaColumns = Mathf.Clamp(areaColumns, 1, trainingAreaCount);
+        int areaCount = Mathf.Max(1, IsInferenceTestMode ? inferenceTestAreaCount : trainingAreaCount);
+        int columns = Mathf.Clamp(
+            IsInferenceTestMode ? inferenceTestAreaColumns : areaColumns,
+            1,
+            areaCount);
 
         float sensorRange = Mathf.Max(prefabAgent.visionDistance, 15f);
         float isolationMargin = sensorRange * 2f + areaGap;
         float spacingX = maximumMapWidth + isolationMargin;
         float spacingZ = maximumMapHeight + isolationMargin;
 
-        for (int i = 0; i < trainingAreaCount; i++)
+        for (int i = 0; i < areaCount; i++)
         {
-            int column = i % areaColumns;
-            int row = i / areaColumns;
+            int column = i % columns;
+            int row = i / columns;
             Vector3 localOffset = new Vector3(column * spacingX, 0f, row * spacingZ);
             Vector3 areaOrigin = transform.TransformPoint(localOffset);
 
@@ -522,6 +633,22 @@ public class LearnManager : MonoBehaviour
         CurriculumAreasReady = 0;
     }
 
+    private void RestoreTimeScale()
+    {
+        if (!changedTimeScale)
+        {
+            return;
+        }
+
+        Time.timeScale = previousTimeScale;
+        changedTimeScale = false;
+    }
+
+    private void OnDestroy()
+    {
+        RestoreTimeScale();
+    }
+
     private void OnValidate()
     {
         mapWidth = Mathf.Max(5, mapWidth);
@@ -535,6 +662,9 @@ public class LearnManager : MonoBehaviour
         areaGap = Mathf.Max(0f, areaGap);
         testSeedMinimum = Mathf.Clamp(testSeedMinimum, 1, int.MaxValue - 2);
         testSeedMaximum = Mathf.Clamp(testSeedMaximum, testSeedMinimum, int.MaxValue - 2);
+        inferenceTestAreaCount = Mathf.Max(1, inferenceTestAreaCount);
+        inferenceTestAreaColumns = Mathf.Clamp(inferenceTestAreaColumns, 1, inferenceTestAreaCount);
+        inferenceTestTimeScale = Mathf.Max(1f, inferenceTestTimeScale);
         fixedTestSeed = Mathf.Clamp(fixedTestSeed, testSeedMinimum, testSeedMaximum);
         successRateWindow = Mathf.Max(1, successRateWindow);
         successesRequiredToAdvance = Mathf.Clamp(successesRequiredToAdvance, 1, successRateWindow);

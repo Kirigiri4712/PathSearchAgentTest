@@ -1,0 +1,12 @@
+{
+    "model": "Assets/Models/ExplorerAgent-100000237.onnx",
+    "layout": "RoomsAndCorridors",
+    "seedMinimum": 1,
+    "seedMaximum": 1000,
+    "episodes": 1000,
+    "successes": 913,
+    "successRate": 0.9129999876022339,
+    "parallelAreas": 4,
+    "timeScale": 5.0,
+    "completedUtc": "2026-11-15T04:36:31.0018772Z"
+}

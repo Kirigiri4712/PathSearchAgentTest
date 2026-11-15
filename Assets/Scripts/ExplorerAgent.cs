@@ -6,9 +6,17 @@ using Unity.MLAgents.Sensors;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+public enum EpisodeEndReason
+{
+    GoalReached,
+    StepLimit,
+    FellBelowFloor
+}
+
 public class ExplorerAgent : Agent
 {
     private static PhysicsMaterial frictionlessMovementMaterial;
+    private const float MovementActionDeadZoneSqr = 0.001f;
 
     [SerializeField] private Rigidbody parentRB;
     private LearnManager learnManager;
@@ -217,7 +225,7 @@ public class ExplorerAgent : Agent
         if (transform.position.y < -10f)
         {
             AddReward(-1f);
-            EndThisEpisode(false);
+            EndThisEpisode(EpisodeEndReason.FellBelowFloor);
         }
     }
 
@@ -380,7 +388,7 @@ public class ExplorerAgent : Agent
         Vector3 requestedVelocity = Vector3.zero;
         Vector3 wallCorrectedVelocity = Vector3.zero;
 
-        if (moveDir.sqrMagnitude > 0.001f)
+        if (moveDir.sqrMagnitude > MovementActionDeadZoneSqr)
         {
             moveDir.Normalize();
 
@@ -463,7 +471,7 @@ public class ExplorerAgent : Agent
         if (stepCount >= maxStep)
         {
             GoalDistanceRewardFoundedGoal();
-            EndThisEpisode(false);
+            EndThisEpisode(EpisodeEndReason.StepLimit);
         }
     }
 
@@ -618,19 +626,52 @@ public class ExplorerAgent : Agent
             return;
         }
 
+        string likelyCause = DiagnoseStoppedMovement(currentAction, totalPlanarTravel);
         Debug.LogWarning(
-            $"[StuckDiagnostic] Agent={name}, step={stepCount}, " +
+            $"[StuckDiagnostic] Agent={name}, step={stepCount}, diagnosis={likelyCause}, " +
             $"windowActions={windowActionCount}, netPlanarDisplacement={netPlanarDistance:F3}m, " +
             $"totalPlanarTravel={totalPlanarTravel:F3}m, position={parentRB.position}, " +
             $"forward={transform.forward}, " +
             $"movementHistory={FormatStuckDiagnosticSamples()}, " +
             $"currentAction={FormatAction(currentAction)}, " +
+            $"actionDeadZoneMagnitude={Mathf.Sqrt(MovementActionDeadZoneSqr):F4}, " +
             $"rigidbodyVelocity={FormatPlanarVelocity(parentRB.linearVelocity)}, " +
             $"foundGoal={foundGoal}, visitedCells={visitedCells.Count}, " +
             $"wallContacts={FormatWallContactNormals()}",
             this);
 
         stuckDiagnosticLogged = true;
+    }
+
+    private string DiagnoseStoppedMovement(Vector2 currentAction, float totalPlanarTravel)
+    {
+        bool everyActionInDeadZone = currentAction.sqrMagnitude <= MovementActionDeadZoneSqr;
+        bool hasRequestedMovement = false;
+        bool hasSlideMovement = false;
+
+        foreach (StuckDiagnosticSample sample in recentStuckDiagnosticSamples)
+        {
+            everyActionInDeadZone &= sample.Action.sqrMagnitude <= MovementActionDeadZoneSqr;
+            hasRequestedMovement |= sample.RequestedVelocity.sqrMagnitude > 0.01f;
+            hasSlideMovement |= sample.WallCorrectedVelocity.sqrMagnitude > 0.01f;
+        }
+
+        if (everyActionInDeadZone)
+        {
+            return "PolicyOutputInsideMovementDeadZone";
+        }
+
+        if (hasRequestedMovement && !hasSlideMovement)
+        {
+            return "WallContactCorrectionRemovedMovement";
+        }
+
+        if (hasSlideMovement && totalPlanarTravel < 0.05f)
+        {
+            return "MovementCommandPresentButPhysicsBarelyMoved";
+        }
+
+        return "LowNetProgressOrOscillationInspectActionHistory";
     }
 
     private void ResetStuckDiagnostics()
@@ -649,7 +690,7 @@ public class ExplorerAgent : Agent
         foreach (StuckDiagnosticSample sample in recentStuckDiagnosticSamples)
         {
             samples.Add(
-                $"a={FormatAction(sample.Action)} " +
+                $"a={FormatAction(sample.Action)} |a|={sample.Action.magnitude:F3} " +
                 $"req={FormatPlanarVelocity(sample.RequestedVelocity)} " +
                 $"slide={FormatPlanarVelocity(sample.WallCorrectedVelocity)} " +
                 $"d=({sample.Displacement.x:F3},{sample.Displacement.z:F3})");
@@ -702,7 +743,7 @@ public class ExplorerAgent : Agent
         {
             AddReward(goalReward);
             Debug.Log("Goal! Episode reward: " + GetCumulativeReward());
-            EndThisEpisode(true);
+            EndThisEpisode(EpisodeEndReason.GoalReached);
         }
     }
 
@@ -715,14 +756,24 @@ public class ExplorerAgent : Agent
         canGoal = true;
     }
 
-    private void EndThisEpisode(bool reachedGoal)
+    private void EndThisEpisode(EpisodeEndReason reason)
     {
         if (episodeEnded) return;
         episodeEnded = true;
+        bool reachedGoal = reason == EpisodeEndReason.GoalReached;
 
         if (learnManager != null)
         {
-            bool testRunComplete = learnManager.RecordEpisodeResult(this, reachedGoal);
+            bool testRunComplete = learnManager.RecordEpisodeResult(
+                this,
+                reachedGoal,
+                reason.ToString(),
+                stepCount,
+                episodeSpawnPosition,
+                episodeGoalPosition,
+                parentRB != null ? parentRB.position : transform.position,
+                parentRB != null ? parentRB.linearVelocity : Vector3.zero,
+                visitedCells.Count);
             if (testRunComplete)
             {
                 // Leave the final test episode visible in the scene without

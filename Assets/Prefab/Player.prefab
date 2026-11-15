@@ -64,6 +64,9 @@ MonoBehaviour:
   visitedCellSize: 1
   visionDistance: 10
   visionAngle: 70
+  enableStuckDiagnostics: 1
+  stuckDiagnosticWindowActionCount: 10
+  stuckDiagnosticNetDisplacementThreshold: 0.25
   maxStep: 5000
 --- !u!114 &191956639997890032
 MonoBehaviour:
