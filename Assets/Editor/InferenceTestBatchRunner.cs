@@ -17,13 +17,15 @@ public static class InferenceTestBatchRunner
     private const string LastCompletedKey = "PathSearch.InferenceTest.LastCompleted";
     private const string LastProgressUtcKey = "PathSearch.InferenceTest.LastProgressUtcTicks";
     private const string ScenePath = "Assets/Scenes/SampleScene.unity";
-    private const string ModelPath = "Assets/Models/ExplorerAgent-100000237.onnx";
+    private const string DefaultModelPath = "Assets/Models/ExplorerAgent-100000237.onnx";
     private const int TestAreaCount = 4;
     private const int TestAreaColumns = 2;
     private const int TestSeedMinimum = 1;
     private const int TestSeedMaximum = 1000;
     private const float TestTimeScale = 5f;
     private const double NoProgressTimeoutSeconds = 600d;
+
+    private static string ModelPath => GetCommandLineModelPath() ?? DefaultModelPath;
 
     static InferenceTestBatchRunner()
     {
@@ -112,6 +114,20 @@ public static class InferenceTestBatchRunner
         }
     }
 
+    private static string GetCommandLineModelPath()
+    {
+        const string argumentPrefix = "-inferenceModel=";
+        foreach (string argument in Environment.GetCommandLineArgs())
+        {
+            if (argument.StartsWith(argumentPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                return argument.Substring(argumentPrefix.Length).Trim('"');
+            }
+        }
+
+        return null;
+    }
+
     private static void PollTest()
     {
         if (!SessionState.GetBool(ActiveKey, false) || !EditorApplication.isPlaying)
@@ -163,7 +179,7 @@ public static class InferenceTestBatchRunner
         string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
         string outputPath = Path.Combine(
             outputDirectory,
-            $"ExplorerAgent-100000237_{layout}_{TestSeedMinimum}-{TestSeedMaximum}_{timestamp}.json");
+            $"{Path.GetFileNameWithoutExtension(ModelPath)}_{layout}_{TestSeedMinimum}-{TestSeedMaximum}_{timestamp}.json");
         var summary = new InferenceTestSummary
         {
             model = ModelPath,
@@ -184,7 +200,7 @@ public static class InferenceTestBatchRunner
         {
             string failurePath = Path.Combine(
                 outputDirectory,
-                $"ExplorerAgent-100000237_{layout}_{TestSeedMinimum}-{TestSeedMaximum}_{timestamp}_failures.json");
+                $"{Path.GetFileNameWithoutExtension(ModelPath)}_{layout}_{TestSeedMinimum}-{TestSeedMaximum}_{timestamp}_failures.json");
             var failureReport = new InferenceFailureReport
             {
                 model = ModelPath,

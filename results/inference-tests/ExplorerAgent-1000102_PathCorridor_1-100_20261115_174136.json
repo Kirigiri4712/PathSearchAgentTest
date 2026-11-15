@@ -1,0 +1,25 @@
+{
+  "model": "Assets/Models/ExplorerAgent-1000102.onnx",
+  "layout": "PathCorridor",
+  "requestedSeedMinimum": 1,
+  "requestedSeedMaximum": 100,
+  "evaluatedEpisodes": 100,
+  "successes": 29,
+  "failures": 71,
+  "successRate": 0.29,
+  "parallelAreas": 4,
+  "timeScale": 5,
+  "mapWidth": 20,
+  "mapHeight": 20,
+  "waypointCount": 20,
+  "episodeStepLimit": 5000,
+  "completedSeedsBeyond100": [
+    101,
+    102,
+    103,
+    104,
+    105,
+    108
+  ],
+  "completedUtc": "2026-11-15T08:41:36.7624112Z"
+}
