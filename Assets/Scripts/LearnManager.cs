@@ -28,6 +28,7 @@ public class LearnManager : MonoBehaviour
         public Vector3 finalVelocity;
         public int visitedCellCount;
         public string map;
+        public List<ExplorerAgent.InferenceTraceSample> trace;
     }
 
     private enum OperationMode
@@ -102,6 +103,7 @@ public class LearnManager : MonoBehaviour
     private bool testRunComplete;
     private float previousTimeScale = 1f;
     private bool changedTimeScale;
+    [SerializeField, HideInInspector] private bool captureInferenceTrace;
 
     public int CompletedEpisodes { get; private set; }
     public float RecentSuccessRate { get; private set; }
@@ -112,6 +114,7 @@ public class LearnManager : MonoBehaviour
     public float TestSuccessRate { get; private set; }
     public bool IsTestRunComplete => testRunComplete;
     public bool IsInferenceTestMode => operationMode == OperationMode.InferenceTest;
+    public bool CaptureInferenceTrace => captureInferenceTrace;
     public IReadOnlyList<InferenceFailureRecord> InferenceFailures => inferenceFailures;
 
 #if UNITY_EDITOR
@@ -124,7 +127,8 @@ public class LearnManager : MonoBehaviour
         int seedMinimum,
         int seedMaximum,
         int testMapWidth,
-        int testMapHeight)
+        int testMapHeight,
+        bool captureActionTrace = false)
     {
         operationMode = OperationMode.InferenceTest;
         testModel = model;
@@ -137,6 +141,7 @@ public class LearnManager : MonoBehaviour
         testSeedMaximum = seedMaximum;
         mapWidth = testMapWidth;
         mapHeight = testMapHeight;
+        captureInferenceTrace = captureActionTrace;
         automaticCurriculum = false;
     }
 #endif
@@ -317,7 +322,8 @@ public class LearnManager : MonoBehaviour
                     finalPosition = finalPosition,
                     finalVelocity = finalVelocity,
                     visitedCellCount = visitedCellCount,
-                    map = mapGenerator.CreateDiagnosticMapSnapshot()
+                    map = mapGenerator.CreateDiagnosticMapSnapshot(),
+                    trace = captureInferenceTrace ? agent.GetInferenceTraceSnapshot() : null
                 };
                 inferenceFailures.Add(failure);
                 Debug.LogWarning(

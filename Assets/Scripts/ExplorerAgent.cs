@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
@@ -15,6 +16,36 @@ public enum EpisodeEndReason
 
 public class ExplorerAgent : Agent
 {
+    [Serializable]
+    public sealed class InferenceTraceSample
+    {
+        public int step;
+        public Vector3 position;
+        public Vector3 agentTransformPosition;
+        public Vector2 forward;
+        public Vector2 action;
+        public Vector2 requestedVelocity;
+        public Vector2 wallCorrectedVelocity;
+        public Vector2 actualDisplacement;
+        public Vector2 rigidbodyVelocity;
+        public Vector2Int cell;
+        public int visitedCellCount;
+        public int knownTileCount;
+        public int wallContactCount;
+        public int collisionEnterEvents;
+        public int wallCollisionEnterEvents;
+        public int collisionStayEvents;
+        public int wallCollisionStayEvents;
+        public string forwardRayHitTag;
+        public bool goalVisible;
+        public float visibleGoalDistance;
+        public float diagnosticGoalDistance;
+        public float recentTravelDistance;
+        public Vector2 recentNetDisplacement;
+        public bool wallInForwardRay;
+        public float forwardRayDistance;
+    }
+
     private static PhysicsMaterial frictionlessMovementMaterial;
     private const float MovementActionDeadZoneSqr = 0.001f;
 
@@ -81,6 +112,10 @@ public class ExplorerAgent : Agent
     private readonly List<ContactPoint> collisionContactPoints = new List<ContactPoint>();
     private readonly Dictionary<Collider, List<Vector3>> wallContactNormals =
         new Dictionary<Collider, List<Vector3>>();
+    private int collisionEnterEvents;
+    private int wallCollisionEnterEvents;
+    private int collisionStayEvents;
+    private int wallCollisionStayEvents;
 
     private Transform goal;
     private Vector3 episodeSpawnPosition;
@@ -140,6 +175,9 @@ public class ExplorerAgent : Agent
     private float actionZAbsSum;
     private readonly List<StuckDiagnosticSample> recentStuckDiagnosticSamples =
         new List<StuckDiagnosticSample>();
+    private readonly List<InferenceTraceSample> inferenceTrace =
+        new List<InferenceTraceSample>();
+    private Vector3 lastTraceBodyPosition;
     private bool stuckDiagnosticLogged;
     private bool hasPreviousDiagnosticAction;
     private Vector2 previousDiagnosticAction;
@@ -181,6 +219,7 @@ public class ExplorerAgent : Agent
             moveInput = Vector2.zero;
 
         ConfigureFrictionlessMovement();
+        ConfigureCollisionRelay();
 
         //rb = GetComponent<Rigidbody>();
         //// 転倒防止: X,Z軸回転を固定
@@ -188,6 +227,23 @@ public class ExplorerAgent : Agent
         //// 移動安定用に線形ドラグを設定
         //rb.linearDamping = 1.0f;
         inputActions.Player.Enable(); //これやんないとinputSystemが動かん
+    }
+
+    private void ConfigureCollisionRelay()
+    {
+        if (parentRB == null)
+        {
+            Debug.LogError("ExplorerAgent requires a Rigidbody for collision relaying.", this);
+            return;
+        }
+
+        ExplorerAgentCollisionRelay relay = parentRB.GetComponent<ExplorerAgentCollisionRelay>();
+        if (relay == null)
+        {
+            relay = parentRB.gameObject.AddComponent<ExplorerAgentCollisionRelay>();
+        }
+
+        relay.Bind(this);
     }
 
     private void ConfigureFrictionlessMovement()
@@ -294,12 +350,18 @@ public class ExplorerAgent : Agent
 
         // Keep the configured vertical lock; generated maps align their floor to this height.
         parentRB.position = spawnPosition;
+        lastTraceBodyPosition = parentRB.position;
 
         transform.rotation = Quaternion.Euler(0, map.SpawnRotation, 0);
 
         // 探索セル履歴初期化
         visitedCells.Clear();
         visitCountByCell.Clear();
+        inferenceTrace.Clear();
+        collisionEnterEvents = 0;
+        wallCollisionEnterEvents = 0;
+        collisionStayEvents = 0;
+        wallCollisionStayEvents = 0;
         hasLastVisitCountCell = false;
         memoryMap.Clear();
         RegisterVisited(transform.position);
@@ -460,6 +522,14 @@ public class ExplorerAgent : Agent
         // 6) ゴール視認判定
         CheckGoalVisible();
 
+        CaptureInferenceTraceSample(
+            rawAction,
+            requestedVelocity,
+            wallCorrectedVelocity,
+            hitWall,
+            hitWall ? hit.distance : -1f,
+            hitWall && hit.collider != null ? hit.collider.tag : string.Empty);
+
         if (actionSampleCount >= 1000)
         {
             Debug.Log(
@@ -506,24 +576,32 @@ public class ExplorerAgent : Agent
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    public void HandleCollisionEnter(Collision collision)
     {
-        if (collision.collider.CompareTag("Wall"))
+        collisionEnterEvents++;
+        if (!collision.collider.CompareTag("Wall"))
         {
-            UpdateWallContactNormals(collision);
-            AddReward(wallPenalty);
+            return;
         }
+
+        wallCollisionEnterEvents++;
+        UpdateWallContactNormals(collision);
+        AddReward(wallPenalty);
     }
 
-    private void OnCollisionStay(Collision collision)
+    public void HandleCollisionStay(Collision collision)
     {
-        if (collision.collider.CompareTag("Wall"))
+        collisionStayEvents++;
+        if (!collision.collider.CompareTag("Wall"))
         {
-            UpdateWallContactNormals(collision);
+            return;
         }
+
+        wallCollisionStayEvents++;
+        UpdateWallContactNormals(collision);
     }
 
-    private void OnCollisionExit(Collision collision)
+    public void HandleCollisionExit(Collision collision)
     {
         wallContactNormals.Remove(collision.collider);
     }
@@ -798,6 +876,64 @@ public class ExplorerAgent : Agent
         // エピソード終了
         Debug.Log(GetCumulativeReward());
         EndEpisode();
+    }
+
+    public List<InferenceTraceSample> GetInferenceTraceSnapshot()
+    {
+        return new List<InferenceTraceSample>(inferenceTrace);
+    }
+
+    private void CaptureInferenceTraceSample(
+        Vector2 action,
+        Vector3 requestedVelocity,
+        Vector3 wallCorrectedVelocity,
+        bool wallInForwardRay,
+        float forwardRayDistance,
+        string forwardRayHitTag)
+    {
+        if (learnManager == null || !learnManager.CaptureInferenceTrace)
+        {
+            return;
+        }
+
+        Vector3 position = parentRB != null ? parentRB.position : transform.position;
+        Vector3 actualDisplacement = position - lastTraceBodyPosition;
+        lastTraceBodyPosition = position;
+        Vector3 rigidbodyVelocity = parentRB != null
+            ? parentRB.linearVelocity
+            : Vector3.zero;
+
+        inferenceTrace.Add(new InferenceTraceSample
+        {
+            step = stepCount,
+            position = position,
+            agentTransformPosition = transform.position,
+            forward = new Vector2(transform.forward.x, transform.forward.z),
+            action = action,
+            requestedVelocity = new Vector2(requestedVelocity.x, requestedVelocity.z),
+            wallCorrectedVelocity = new Vector2(wallCorrectedVelocity.x, wallCorrectedVelocity.z),
+            actualDisplacement = new Vector2(actualDisplacement.x, actualDisplacement.z),
+            rigidbodyVelocity = new Vector2(rigidbodyVelocity.x, rigidbodyVelocity.z),
+            cell = WorldToCell(position),
+            visitedCellCount = visitedCells.Count,
+            knownTileCount = memoryMap.Count,
+            wallContactCount = wallContactNormals.Count,
+            collisionEnterEvents = collisionEnterEvents,
+            wallCollisionEnterEvents = wallCollisionEnterEvents,
+            collisionStayEvents = collisionStayEvents,
+            wallCollisionStayEvents = wallCollisionStayEvents,
+            forwardRayHitTag = forwardRayHitTag,
+            goalVisible = foundGoal,
+            visibleGoalDistance = foundGoal && goal != null
+                ? Vector3.Distance(position, goal.position)
+                : -1f,
+            // Evaluator-only ground truth; it is not included in agent observations.
+            diagnosticGoalDistance = Vector3.Distance(position, episodeGoalPosition),
+            recentTravelDistance = recentPlanarTravelDistance,
+            recentNetDisplacement = recentPlanarNetDisplacement,
+            wallInForwardRay = wallInForwardRay,
+            forwardRayDistance = forwardRayDistance
+        });
     }
 
     private void RegisterVisited(Vector3 pos)

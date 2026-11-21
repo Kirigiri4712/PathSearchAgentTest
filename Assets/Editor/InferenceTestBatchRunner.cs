@@ -18,12 +18,13 @@ public static class InferenceTestBatchRunner
     private const string LastProgressUtcKey = "PathSearch.InferenceTest.LastProgressUtcTicks";
     private const string ScenePath = "Assets/Scenes/SampleScene.unity";
     private const string DefaultModelPath = "Assets/Models/ExplorerAgent-100000237.onnx";
-    private const int TestAreaCount = 4;
-    private const int TestAreaColumns = 2;
-    private const int TestSeedMinimum = 1;
-    private const int TestSeedMaximum = 1000;
     private const float TestTimeScale = 5f;
     private const double NoProgressTimeoutSeconds = 600d;
+    private static int TestAreaCount => Mathf.Max(1, GetCommandLineInt("-testAreaCount=", 4));
+    private static int TestAreaColumns => Mathf.Clamp(GetCommandLineInt("-testAreaColumns=", 2), 1, TestAreaCount);
+    private static int TestSeedMinimum => Mathf.Max(1, GetCommandLineInt("-testSeedMinimum=", 1));
+    private static int TestSeedMaximum => Mathf.Max(TestSeedMinimum, GetCommandLineInt("-testSeedMaximum=", 1000));
+    private static bool CaptureActionTrace => HasCommandLineFlag("-captureInferenceTrace");
 
     private static string ModelPath => GetCommandLineModelPath() ?? DefaultModelPath;
 
@@ -78,7 +79,8 @@ public static class InferenceTestBatchRunner
                 TestSeedMinimum,
                 TestSeedMaximum,
                 20,
-                20);
+                20,
+                CaptureActionTrace);
             EditorUtility.SetDirty(manager);
             EditorSceneManager.MarkSceneDirty(manager.gameObject.scene);
             if (!EditorSceneManager.SaveScene(manager.gameObject.scene))
@@ -103,7 +105,7 @@ public static class InferenceTestBatchRunner
 
             Debug.Log($"[InferenceTestRunner] Starting {layout}; model={ModelPath}; " +
                       $"areas={TestAreaCount}; seeds={TestSeedMinimum}-{TestSeedMaximum}; " +
-                      $"timeScale={TestTimeScale}.");
+                      $"timeScale={TestTimeScale}; trace={CaptureActionTrace}.");
             EditorApplication.EnterPlaymode();
         }
         catch (Exception exception)
@@ -112,6 +114,33 @@ public static class InferenceTestBatchRunner
             SessionState.SetBool(ActiveKey, false);
             EditorApplication.Exit(1);
         }
+    }
+
+    private static int GetCommandLineInt(string argumentPrefix, int fallback)
+    {
+        foreach (string argument in Environment.GetCommandLineArgs())
+        {
+            if (argument.StartsWith(argumentPrefix, StringComparison.OrdinalIgnoreCase) &&
+                int.TryParse(argument.Substring(argumentPrefix.Length), out int parsed))
+            {
+                return parsed;
+            }
+        }
+
+        return fallback;
+    }
+
+    private static bool HasCommandLineFlag(string flag)
+    {
+        foreach (string argument in Environment.GetCommandLineArgs())
+        {
+            if (string.Equals(argument, flag, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static string GetCommandLineModelPath()
@@ -191,6 +220,7 @@ public static class InferenceTestBatchRunner
             successRate = manager.TestSuccessRate,
             parallelAreas = TestAreaCount,
             timeScale = TestTimeScale,
+            traceEnabled = CaptureActionTrace,
             completedUtc = DateTime.UtcNow.ToString("O")
         };
         File.WriteAllText(outputPath, JsonUtility.ToJson(summary, true));
@@ -241,6 +271,7 @@ public static class InferenceTestBatchRunner
         public float successRate;
         public int parallelAreas;
         public float timeScale;
+        public bool traceEnabled;
         public string completedUtc;
     }
 
