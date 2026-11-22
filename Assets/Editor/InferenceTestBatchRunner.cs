@@ -16,8 +16,9 @@ public static class InferenceTestBatchRunner
     private const string StartedUtcKey = "PathSearch.InferenceTest.StartedUtcTicks";
     private const string LastCompletedKey = "PathSearch.InferenceTest.LastCompleted";
     private const string LastProgressUtcKey = "PathSearch.InferenceTest.LastProgressUtcTicks";
+    private const string InferenceErrorKey = "PathSearch.InferenceTest.FirstRuntimeError";
     private const string ScenePath = "Assets/Scenes/SampleScene.unity";
-    private const string DefaultModelPath = "Assets/Models/ExplorerAgent-100000237.onnx";
+    private const string DefaultModelPath = "Assets/Models/ExplorerAgent-GTrXL-50870-batched.onnx";
     private const float TestTimeScale = 5f;
     private const double NoProgressTimeoutSeconds = 600d;
     private static int TestAreaCount => Mathf.Max(1, GetCommandLineInt("-testAreaCount=", 4));
@@ -32,6 +33,8 @@ public static class InferenceTestBatchRunner
     {
         if (SessionState.GetBool(ActiveKey, false))
         {
+            Application.logMessageReceived -= CaptureRuntimeError;
+            Application.logMessageReceived += CaptureRuntimeError;
             EditorApplication.update -= PollTest;
             EditorApplication.update += PollTest;
         }
@@ -98,8 +101,11 @@ public static class InferenceTestBatchRunner
             SessionState.SetBool(ActiveKey, true);
             SessionState.SetInt(LayoutKey, (int)layout);
             SessionState.SetInt(LastCompletedKey, 0);
+            SessionState.SetString(InferenceErrorKey, string.Empty);
             SessionState.SetString(StartedUtcKey, now.ToString());
             SessionState.SetString(LastProgressUtcKey, now.ToString());
+            Application.logMessageReceived -= CaptureRuntimeError;
+            Application.logMessageReceived += CaptureRuntimeError;
             EditorApplication.update -= PollTest;
             EditorApplication.update += PollTest;
 
@@ -110,6 +116,7 @@ public static class InferenceTestBatchRunner
         }
         catch (Exception exception)
         {
+            Application.logMessageReceived -= CaptureRuntimeError;
             Debug.LogException(exception);
             SessionState.SetBool(ActiveKey, false);
             EditorApplication.Exit(1);
@@ -159,7 +166,20 @@ public static class InferenceTestBatchRunner
 
     private static void PollTest()
     {
-        if (!SessionState.GetBool(ActiveKey, false) || !EditorApplication.isPlaying)
+        if (!SessionState.GetBool(ActiveKey, false))
+        {
+            return;
+        }
+
+        string runtimeError = SessionState.GetString(InferenceErrorKey, string.Empty);
+        if (!string.IsNullOrEmpty(runtimeError))
+        {
+            Fail("Inference produced an error; stopping before observations can accumulate.\n" +
+                 runtimeError);
+            return;
+        }
+
+        if (!EditorApplication.isPlaying)
         {
             return;
         }
@@ -193,6 +213,7 @@ public static class InferenceTestBatchRunner
 
         WriteSummary(manager, (MapLayoutMode)SessionState.GetInt(LayoutKey, 0));
         SessionState.SetBool(ActiveKey, false);
+        Application.logMessageReceived -= CaptureRuntimeError;
         EditorApplication.update -= PollTest;
         Debug.Log("[InferenceTestRunner] Test completed; exiting Play Mode.");
         EditorApplication.isPlaying = false;
@@ -247,11 +268,27 @@ public static class InferenceTestBatchRunner
 
     private static void Fail(string message)
     {
-        Debug.LogError($"[InferenceTestRunner] {message}");
         SessionState.SetBool(ActiveKey, false);
+        Application.logMessageReceived -= CaptureRuntimeError;
         EditorApplication.update -= PollTest;
+        Debug.LogError($"[InferenceTestRunner] {message}");
         EditorApplication.isPlaying = false;
         EditorApplication.delayCall += () => EditorApplication.Exit(1);
+    }
+
+    private static void CaptureRuntimeError(string condition, string stackTrace, LogType type)
+    {
+        if (!SessionState.GetBool(ActiveKey, false) ||
+            (type != LogType.Error && type != LogType.Exception) ||
+            !string.IsNullOrEmpty(SessionState.GetString(InferenceErrorKey, string.Empty)))
+        {
+            return;
+        }
+
+        string details = string.IsNullOrEmpty(stackTrace)
+            ? condition
+            : condition + "\n" + stackTrace;
+        SessionState.SetString(InferenceErrorKey, details);
     }
 
     private static long ParseTicks(string value)

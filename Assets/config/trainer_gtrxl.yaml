@@ -1,0 +1,30 @@
+behaviors:
+  ExplorerAgent:
+    trainer_type: gtrxl_ppo
+    max_steps: 10000000
+    time_horizon: 128
+    summary_freq: 10000
+
+    hyperparameters:
+      batch_size: 1024
+      buffer_size: 10240
+      learning_rate: 3.0e-4
+      shared_critic: false
+
+    network_settings:
+      normalize: true
+      hidden_units: 128
+      num_layers: 2
+      memory:
+        # GTrXL memory = 2 layers * (16 hidden-state slots * 128 + 1 valid-count value).
+        memory_size: 4098
+        sequence_length: 64
+
+    reward_signals:
+      extrinsic:
+        gamma: 0.99
+        strength: 1.0
+      curiosity:
+        gamma: 0.99
+        strength: 0.02
+        encoding_size: 128

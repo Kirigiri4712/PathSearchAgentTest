@@ -17,6 +17,13 @@ public enum EpisodeEndReason
 public class ExplorerAgent : Agent
 {
     [Serializable]
+    private sealed class AgentLandmark
+    {
+        public Vector3 position;
+        public int placementStep;
+    }
+
+    [Serializable]
     public sealed class InferenceTraceSample
     {
         public int step;
@@ -75,6 +82,15 @@ public class ExplorerAgent : Agent
     [Tooltip("直近の移動距離を集計するOnActionReceived呼び出し数。DecisionPeriod=5なら100で約20回の判断分です。")]
     [SerializeField, Min(1)] private int movementHistoryWindowSteps = 100;
     private const int VisitCountObservationCap = 3;
+    private const int MaxAgentLandmarks = 64;
+    private const int LandmarkActionBranch = 0;
+    private const int PlaceLandmarkAction = 1;
+    [Header("Agent-placed Memory Landmarks")]
+    [SerializeField] private BufferSensorComponent landmarkBufferSensor;
+    [SerializeField] private bool enableLandmarkActions = true;
+    [SerializeField] private bool exposeLandmarkObservations = true;
+    private readonly List<AgentLandmark> agentLandmarks = new List<AgentLandmark>();
+    private readonly HashSet<Vector2Int> landmarkCells = new HashSet<Vector2Int>();
     private readonly Dictionary<Vector2Int, int> visitCountByCell =
         new Dictionary<Vector2Int, int>();
     private Vector2Int lastVisitCountCell;
@@ -220,6 +236,10 @@ public class ExplorerAgent : Agent
 
         ConfigureFrictionlessMovement();
         ConfigureCollisionRelay();
+        if (landmarkBufferSensor == null)
+        {
+            landmarkBufferSensor = GetComponent<BufferSensorComponent>();
+        }
 
         //rb = GetComponent<Rigidbody>();
         //// 転倒防止: X,Z軸回転を固定
@@ -357,6 +377,8 @@ public class ExplorerAgent : Agent
         // 探索セル履歴初期化
         visitedCells.Clear();
         visitCountByCell.Clear();
+        agentLandmarks.Clear();
+        landmarkCells.Clear();
         inferenceTrace.Clear();
         collisionEnterEvents = 0;
         wallCollisionEnterEvents = 0;
@@ -421,10 +443,18 @@ public class ExplorerAgent : Agent
         AddMemoryObservation(sensor, GetMemoryObservationRadius());
         AddVisitCountObservation(sensor);
         AddMovementHistoryObservation(sensor);
+        AppendLandmarkObservations();
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
+        if (enableLandmarkActions &&
+            actions.DiscreteActions.Length > LandmarkActionBranch &&
+            actions.DiscreteActions[LandmarkActionBranch] == PlaceLandmarkAction)
+        {
+            TryPlaceLandmark(parentRB != null ? parentRB.position : transform.position);
+        }
+
         UpdateMovementHistory();
         actionsSinceVisibleTileScan++;
         if (actionsSinceVisibleTileScan >= Mathf.Max(1, visibleTileScanInterval))
@@ -560,6 +590,11 @@ public class ExplorerAgent : Agent
 
         c[0] = moveInput.x; // A,D
         c[1] = moveInput.y; // W,S
+        var d = actionsOut.DiscreteActions;
+        if (d.Length > LandmarkActionBranch)
+        {
+            d[LandmarkActionBranch] = 0;
+        }
         //Debug.Log(moveInput.x + " / " +  moveInput.y);
     }
 
@@ -946,6 +981,54 @@ public class ExplorerAgent : Agent
         hasLastVisitCountCell = true;
 
         memoryMap[cell] = MemoryCell.Empty;
+    }
+
+    private void TryPlaceLandmark(Vector3 position)
+    {
+        if (agentLandmarks.Count >= MaxAgentLandmarks)
+        {
+            return;
+        }
+
+        Vector2Int cell = WorldToCell(position);
+        if (!landmarkCells.Add(cell))
+        {
+            return;
+        }
+
+        agentLandmarks.Add(new AgentLandmark
+        {
+            position = position,
+            placementStep = stepCount
+        });
+    }
+
+    private void AppendLandmarkObservations()
+    {
+        if (!exposeLandmarkObservations || landmarkBufferSensor == null)
+        {
+            return;
+        }
+
+        foreach (AgentLandmark landmark in agentLandmarks)
+        {
+            Vector3 relative = transform.InverseTransformDirection(
+                landmark.position - transform.position);
+            float age = Mathf.Clamp01(
+                (float)(stepCount - landmark.placementStep) / Mathf.Max(1, maxStep));
+
+            landmarkBufferSensor.AppendObservation(new[]
+            {
+                CompressLandmarkOffset(relative.x),
+                CompressLandmarkOffset(relative.z),
+                age
+            });
+        }
+    }
+
+    private static float CompressLandmarkOffset(float offset)
+    {
+        return offset / (1f + Mathf.Abs(offset));
     }
 
     private void RecordCellVisit(Vector2Int cell)

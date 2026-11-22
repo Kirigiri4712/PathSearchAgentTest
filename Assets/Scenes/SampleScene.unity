@@ -461,8 +461,8 @@ MonoBehaviour:
   testSeedMaximum: 1000
   useFixedTestSeed: 0
   fixedTestSeed: 1
-  trainingAreaCount: 100
-  areaColumns: 10
+  trainingAreaCount: 20
+  areaColumns: 4
   maximumMapWidth: 100
   maximumMapHeight: 50
   maximumWaypointCount: 20
@@ -475,6 +475,7 @@ MonoBehaviour:
   mapHeightIncreasePerLevel: 1
   waypointIncreaseEveryLevels: 3
   waypointIncreaseAmount: 1
+  captureInferenceTrace: 0
 --- !u!1 &1814092743
 GameObject:
   m_ObjectHideFlags: 0

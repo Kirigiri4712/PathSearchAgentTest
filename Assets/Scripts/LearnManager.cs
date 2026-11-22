@@ -103,6 +103,7 @@ public class LearnManager : MonoBehaviour
     private bool testRunComplete;
     private float previousTimeScale = 1f;
     private bool changedTimeScale;
+    private bool inferenceRuntimeErrorHandled;
     [SerializeField, HideInInspector] private bool captureInferenceTrace;
 
     public int CompletedEpisodes { get; private set; }
@@ -211,6 +212,7 @@ public class LearnManager : MonoBehaviour
             previousTimeScale = Time.timeScale;
             Time.timeScale = Mathf.Max(1f, inferenceTestTimeScale);
             changedTimeScale = true;
+            Application.logMessageReceived += StopInferenceTestAfterRuntimeError;
         }
 
         if (randomSeed == 0)
@@ -652,8 +654,40 @@ public class LearnManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        Application.logMessageReceived -= StopInferenceTestAfterRuntimeError;
         RestoreTimeScale();
     }
+
+    private void StopInferenceTestAfterRuntimeError(
+        string condition,
+        string stackTrace,
+        LogType type)
+    {
+        if (!IsInferenceTestMode ||
+            inferenceRuntimeErrorHandled ||
+            (type != LogType.Error && type != LogType.Exception))
+        {
+            return;
+        }
+
+        inferenceRuntimeErrorHandled = true;
+        // Prevent another FixedUpdate from appending observations to a failed
+        // recurrent inference batch while the Editor exits Play Mode.
+        Time.timeScale = 0f;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.delayCall += StopEditorPlayModeAfterInferenceError;
+#endif
+    }
+
+#if UNITY_EDITOR
+    private static void StopEditorPlayModeAfterInferenceError()
+    {
+        if (UnityEditor.EditorApplication.isPlaying)
+        {
+            UnityEditor.EditorApplication.isPlaying = false;
+        }
+    }
+#endif
 
     private void OnValidate()
     {

@@ -26,6 +26,11 @@ if ($LASTEXITCODE -ne 0) {
     throw "Could not install ML-Agents 1.1.0."
 }
 
+& $pythonPath -m pip install -e (Join-Path $PSScriptRoot "mlagents-gtrxl")
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not install the PathSearch GTrXL trainer plugin."
+}
+
 & $pythonPath -m pip check
 if ($LASTEXITCODE -ne 0) {
     throw "The ML-Agents virtual environment has dependency conflicts."
