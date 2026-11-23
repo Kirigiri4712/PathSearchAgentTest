@@ -1,0 +1,12 @@
+{
+    "model": "Assets/Models/ExplorerAgent-10000032.onnx",
+    "layout": "PathCorridor",
+    "seedMinimum": 1,
+    "seedMaximum": 1000,
+    "episodes": 1000,
+    "successes": 887,
+    "successRate": 0.8870000243186951,
+    "parallelAreas": 4,
+    "timeScale": 5.0,
+    "completedUtc": "2026-11-15T14:11:56.2447007Z"
+}

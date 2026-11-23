@@ -1,0 +1,47 @@
+{
+    "ExplorerAgent": {
+        "checkpoints": [
+            {
+                "steps": 896,
+                "file_path": "results\\pathsearch_gtrxl_area20_1k_20261122\\ExplorerAgent\\ExplorerAgent-896.onnx",
+                "reward": null,
+                "creation_time": 1795279348.9112496,
+                "auxillary_file_paths": [
+                    "results\\pathsearch_gtrxl_area20_1k_20261122\\ExplorerAgent\\ExplorerAgent-896.pt"
+                ]
+            },
+            {
+                "steps": 1920,
+                "file_path": "results\\pathsearch_gtrxl_area20_1k_20261122\\ExplorerAgent\\ExplorerAgent-1920.onnx",
+                "reward": null,
+                "creation_time": 1795279357.0641198,
+                "auxillary_file_paths": [
+                    "results\\pathsearch_gtrxl_area20_1k_20261122\\ExplorerAgent\\ExplorerAgent-1920.pt"
+                ]
+            },
+            {
+                "steps": 2560,
+                "file_path": "results\\pathsearch_gtrxl_area20_1k_20261122\\ExplorerAgent\\ExplorerAgent-2560.onnx",
+                "reward": null,
+                "creation_time": 1795279362.5851014,
+                "auxillary_file_paths": [
+                    "results\\pathsearch_gtrxl_area20_1k_20261122\\ExplorerAgent\\ExplorerAgent-2560.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 2560,
+            "file_path": "results\\pathsearch_gtrxl_area20_1k_20261122\\ExplorerAgent.onnx",
+            "reward": null,
+            "creation_time": 1795279362.5851014,
+            "auxillary_file_paths": [
+                "results\\pathsearch_gtrxl_area20_1k_20261122\\ExplorerAgent\\ExplorerAgent-2560.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.8.0+cu128"
+    }
+}

@@ -1,0 +1,65 @@
+{
+    "ExplorerAgent": {
+        "checkpoints": [
+            {
+                "steps": 8499971,
+                "file_path": "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-8499971.onnx",
+                "reward": 9.569292978223029,
+                "creation_time": 1794744727.916709,
+                "auxillary_file_paths": [
+                    "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-8499971.pt"
+                ]
+            },
+            {
+                "steps": 8999999,
+                "file_path": "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-8999999.onnx",
+                "reward": 9.942799631506205,
+                "creation_time": 1794745471.6984081,
+                "auxillary_file_paths": [
+                    "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-8999999.pt"
+                ]
+            },
+            {
+                "steps": 9499904,
+                "file_path": "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-9499904.onnx",
+                "reward": 8.145816611126065,
+                "creation_time": 1794746114.6855218,
+                "auxillary_file_paths": [
+                    "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-9499904.pt"
+                ]
+            },
+            {
+                "steps": 9999925,
+                "file_path": "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-9999925.onnx",
+                "reward": 7.834746656152937,
+                "creation_time": 1794746815.346285,
+                "auxillary_file_paths": [
+                    "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-9999925.pt"
+                ]
+            },
+            {
+                "steps": 10000032,
+                "file_path": "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-10000032.onnx",
+                "reward": 7.880658666724744,
+                "creation_time": 1794746815.4485989,
+                "auxillary_file_paths": [
+                    "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-10000032.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 10000032,
+            "file_path": "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent.onnx",
+            "reward": 7.880658666724744,
+            "creation_time": 1794746815.4485989,
+            "auxillary_file_paths": [
+                "results\\visible_tiles_1m_100area_20261115_r2\\ExplorerAgent\\ExplorerAgent-10000032.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.8.0+cu128"
+    }
+}

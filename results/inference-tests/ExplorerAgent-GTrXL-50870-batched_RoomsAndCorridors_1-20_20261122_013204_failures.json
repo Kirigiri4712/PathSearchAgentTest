@@ -1,0 +1,689 @@
+{
+    "model": "Assets/Models/ExplorerAgent-GTrXL-50870-batched.onnx",
+    "layout": "RoomsAndCorridors",
+    "episodes": 20,
+    "failureCount": 20,
+    "completedUtc": "2026-11-21T16:32:04.6574006Z",
+    "records": [
+        {
+            "seed": 1,
+            "areaIndex": 0,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 18.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "goalPosition": {
+                "x": 1.0,
+                "y": 0.5,
+                "z": 1.0
+            },
+            "finalPosition": {
+                "x": 18.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #.....#######.....S#\r\nz=017 #.....#######......#\r\nz=016 #.....#######......#\r\nz=015 #..................#\r\nz=014 #.....#######......#\r\nz=013 #.....#######......#\r\nz=012 #.....#########.####\r\nz=011 ###.###########.####\r\nz=010 ###.###########.####\r\nz=009 ###.###########.####\r\nz=008 ###.###########.####\r\nz=007 ###.###########.####\r\nz=006 #.....#######......#\r\nz=005 #.....#######......#\r\nz=004 #.....#######......#\r\nz=003 #..................#\r\nz=002 #.....#######......#\r\nz=001 #G....#######......#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 2,
+            "areaIndex": 1,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 1.0
+            },
+            "goalPosition": {
+                "x": 153.0,
+                "y": 0.5,
+                "z": 18.0
+            },
+            "finalPosition": {
+                "x": 135.9002685546875,
+                "y": 0.0,
+                "z": 0.8999999761581421
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #......#######....G#\r\nz=017 #......#######.....#\r\nz=016 #......#######.....#\r\nz=015 #..................#\r\nz=014 #......#######.....#\r\nz=013 #......#######.....#\r\nz=012 #......#######.....#\r\nz=011 ###.############.###\r\nz=010 ###.############.###\r\nz=009 ###.############.###\r\nz=008 ###.############.###\r\nz=007 ###.############.###\r\nz=006 ###.############.###\r\nz=005 #......#######.....#\r\nz=004 #......#######.....#\r\nz=003 #..................#\r\nz=002 #......#######.....#\r\nz=001 #S.....#######.....#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 3,
+            "areaIndex": 2,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 103.0
+            },
+            "goalPosition": {
+                "x": 18.0,
+                "y": 0.5,
+                "z": 86.0
+            },
+            "finalPosition": {
+                "x": 0.9010242819786072,
+                "y": 0.0,
+                "z": 102.11968231201172
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 3,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #S......#####......#\r\nz=017 #.......#####......#\r\nz=016 #..................#\r\nz=015 #.......#####......#\r\nz=014 #.......#####......#\r\nz=013 ####.##########.####\r\nz=012 ####.##########.####\r\nz=011 ####.##########.####\r\nz=010 ####.##########.####\r\nz=009 ####.##########.####\r\nz=008 ####.##########.####\r\nz=007 #.......#######.####\r\nz=006 #.......#######.####\r\nz=005 #.......#####......#\r\nz=004 #.......#####......#\r\nz=003 #..................#\r\nz=002 #.......#####......#\r\nz=001 #.......#####.....G#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 4,
+            "areaIndex": 3,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 86.0
+            },
+            "goalPosition": {
+                "x": 153.0,
+                "y": 0.5,
+                "z": 103.0
+            },
+            "finalPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 86.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #.......######....G#\r\nz=017 #.......######.....#\r\nz=016 #.......######.....#\r\nz=015 #..................#\r\nz=014 #.......######.....#\r\nz=013 #.......######.....#\r\nz=012 ####.#########.....#\r\nz=011 ####.###########.###\r\nz=010 ####.###########.###\r\nz=009 ####.###########.###\r\nz=008 ####.###########.###\r\nz=007 ####.###########.###\r\nz=006 #.......########.###\r\nz=005 #.......######.....#\r\nz=004 #.......######.....#\r\nz=003 #..................#\r\nz=002 #.......######.....#\r\nz=001 #S......######.....#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 5,
+            "areaIndex": 0,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "goalPosition": {
+                "x": 18.0,
+                "y": 0.5,
+                "z": 1.0
+            },
+            "finalPosition": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #S....#######......#\r\nz=017 #.....#######......#\r\nz=016 #.....#######......#\r\nz=015 #..................#\r\nz=014 #.....#######......#\r\nz=013 #.....#########.####\r\nz=012 ###.###########.####\r\nz=011 ###.###########.####\r\nz=010 ###.###########.####\r\nz=009 ###.###########.####\r\nz=008 ###.###########.####\r\nz=007 ###.#########......#\r\nz=006 ###.#########......#\r\nz=005 #.....#######......#\r\nz=004 #..................#\r\nz=003 #.....#######......#\r\nz=002 #.....#######......#\r\nz=001 #.....#######.....G#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 6,
+            "areaIndex": 1,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 1.0
+            },
+            "goalPosition": {
+                "x": 153.0,
+                "y": 0.5,
+                "z": 18.0
+            },
+            "finalPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 1.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #......#####......G#\r\nz=017 #......#####.......#\r\nz=016 #......#####.......#\r\nz=015 #..................#\r\nz=014 #......#####.......#\r\nz=013 #......#####.......#\r\nz=012 #......########.####\r\nz=011 ###.###########.####\r\nz=010 ###.###########.####\r\nz=009 ###.###########.####\r\nz=008 ###.###########.####\r\nz=007 #......#####.......#\r\nz=006 #......#####.......#\r\nz=005 #......#####.......#\r\nz=004 #..................#\r\nz=003 #......#####.......#\r\nz=002 #......#####.......#\r\nz=001 #S.....#####.......#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 7,
+            "areaIndex": 2,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 103.0
+            },
+            "goalPosition": {
+                "x": 18.0,
+                "y": 0.5,
+                "z": 86.0
+            },
+            "finalPosition": {
+                "x": 0.9000000953674316,
+                "y": 0.0,
+                "z": 102.07112121582031
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #S......#####......#\r\nz=017 #.......#####......#\r\nz=016 #..................#\r\nz=015 #.......#####......#\r\nz=014 #.......#####......#\r\nz=013 ####.##########.####\r\nz=012 ####.##########.####\r\nz=011 ####.##########.####\r\nz=010 ####.##########.####\r\nz=009 ####.##########.####\r\nz=008 ####.##########.####\r\nz=007 ####.########......#\r\nz=006 #.......#####......#\r\nz=005 #.......#####......#\r\nz=004 #..................#\r\nz=003 #.......#####......#\r\nz=002 #.......#####......#\r\nz=001 #.......#####.....G#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 8,
+            "areaIndex": 3,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 86.0
+            },
+            "goalPosition": {
+                "x": 153.0,
+                "y": 0.5,
+                "z": 103.0
+            },
+            "finalPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 86.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 1,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #.....######......G#\r\nz=017 #.....######.......#\r\nz=016 #..................#\r\nz=015 #.....######.......#\r\nz=014 #.....######.......#\r\nz=013 ###.########.......#\r\nz=012 ###.###########.####\r\nz=011 ###.###########.####\r\nz=010 ###.###########.####\r\nz=009 ###.###########.####\r\nz=008 ###.###########.####\r\nz=007 ###.###########.####\r\nz=006 #.....######.......#\r\nz=005 #.....######.......#\r\nz=004 #.....######.......#\r\nz=003 #..................#\r\nz=002 #.....######.......#\r\nz=001 #S....######.......#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 9,
+            "areaIndex": 0,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "goalPosition": {
+                "x": 18.0,
+                "y": 0.5,
+                "z": 1.0
+            },
+            "finalPosition": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 1,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #S.....#######.....#\r\nz=017 #......#######.....#\r\nz=016 #......#######.....#\r\nz=015 #..................#\r\nz=014 #......#######.....#\r\nz=013 #......#######.....#\r\nz=012 ###.##########.....#\r\nz=011 ###.############.###\r\nz=010 ###.############.###\r\nz=009 ###.############.###\r\nz=008 ###.############.###\r\nz=007 ###.############.###\r\nz=006 ###.##########.....#\r\nz=005 #......#######.....#\r\nz=004 #......#######.....#\r\nz=003 #..................#\r\nz=002 #......#######.....#\r\nz=001 #......#######....G#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 10,
+            "areaIndex": 1,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 1.0
+            },
+            "goalPosition": {
+                "x": 153.0,
+                "y": 0.5,
+                "z": 18.0
+            },
+            "finalPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 1.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 1,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #.......####......G#\r\nz=017 #.......####.......#\r\nz=016 #.......####.......#\r\nz=015 #..................#\r\nz=014 #.......####.......#\r\nz=013 #.......####.......#\r\nz=012 #.......#######.####\r\nz=011 ####.##########.####\r\nz=010 ####.##########.####\r\nz=009 ####.##########.####\r\nz=008 ####.##########.####\r\nz=007 #.......#######.####\r\nz=006 #.......#######.####\r\nz=005 #.......####.......#\r\nz=004 #..................#\r\nz=003 #.......####.......#\r\nz=002 #.......####.......#\r\nz=001 #S......####.......#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 11,
+            "areaIndex": 2,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 1.0,
+                "y": 0.0,
+                "z": 103.0
+            },
+            "goalPosition": {
+                "x": 18.0,
+                "y": 0.5,
+                "z": 86.0
+            },
+            "finalPosition": {
+                "x": 0.903994083404541,
+                "y": 0.0,
+                "z": 102.08355712890625
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #S....########.....#\r\nz=017 #.....########.....#\r\nz=016 #.....########.....#\r\nz=015 #..................#\r\nz=014 #.....########.....#\r\nz=013 #.....########.....#\r\nz=012 #.....########.....#\r\nz=011 ###.############.###\r\nz=010 ###.############.###\r\nz=009 ###.############.###\r\nz=008 ###.############.###\r\nz=007 ###.############.###\r\nz=006 #.....##########.###\r\nz=005 #.....########.....#\r\nz=004 #.....########.....#\r\nz=003 #..................#\r\nz=002 #.....########.....#\r\nz=001 #.....########....G#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 12,
+            "areaIndex": 3,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 136.0,
+                "y": 0.0,
+                "z": 86.0
+            },
+            "goalPosition": {
+                "x": 153.0,
+                "y": 0.5,
+                "z": 103.0
+            },
+            "finalPosition": {
+                "x": 135.89999389648438,
+                "y": 0.0,
+                "z": 85.9000015258789
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #......######.....G#\r\nz=017 #......######......#\r\nz=016 #..................#\r\nz=015 #......######......#\r\nz=014 #......######......#\r\nz=013 ###.###########.####\r\nz=012 ###.###########.####\r\nz=011 ###.###########.####\r\nz=010 ###.###########.####\r\nz=009 ###.###########.####\r\nz=008 ###.###########.####\r\nz=007 ###.###########.####\r\nz=006 ###.###########.####\r\nz=005 #......######......#\r\nz=004 #......######......#\r\nz=003 #..................#\r\nz=002 #......######......#\r\nz=001 #S.....######......#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 13,
+            "areaIndex": 0,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 18.0,
+                "y": 0.0,
+                "z": 1.0
+            },
+            "goalPosition": {
+                "x": 1.0,
+                "y": 0.5,
+                "z": 18.0
+            },
+            "finalPosition": {
+                "x": 18.0,
+                "y": 0.0,
+                "z": 1.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #G.....#######.....#\r\nz=017 #......#######.....#\r\nz=016 #..................#\r\nz=015 #......#######.....#\r\nz=014 #......#######.....#\r\nz=013 ###.##########.....#\r\nz=012 ###.##########.....#\r\nz=011 ###.############.###\r\nz=010 ###.############.###\r\nz=009 ###.############.###\r\nz=008 ###.############.###\r\nz=007 #......#######.....#\r\nz=006 #......#######.....#\r\nz=005 #......#######.....#\r\nz=004 #..................#\r\nz=003 #......#######.....#\r\nz=002 #......#######.....#\r\nz=001 #......#######....S#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 14,
+            "areaIndex": 1,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 153.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "goalPosition": {
+                "x": 136.0,
+                "y": 0.5,
+                "z": 1.0
+            },
+            "finalPosition": {
+                "x": 153.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #.......#####.....S#\r\nz=017 #.......#####......#\r\nz=016 #.......#####......#\r\nz=015 #..................#\r\nz=014 #.......#####......#\r\nz=013 #.......#######.####\r\nz=012 ####.##########.####\r\nz=011 ####.##########.####\r\nz=010 ####.##########.####\r\nz=009 ####.##########.####\r\nz=008 ####.##########.####\r\nz=007 ####.########......#\r\nz=006 #.......#####......#\r\nz=005 #.......#####......#\r\nz=004 #.......#####......#\r\nz=003 #..................#\r\nz=002 #.......#####......#\r\nz=001 #G......#####......#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 15,
+            "areaIndex": 2,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 18.0,
+                "y": 0.0,
+                "z": 86.0
+            },
+            "goalPosition": {
+                "x": 1.0,
+                "y": 0.5,
+                "z": 103.0
+            },
+            "finalPosition": {
+                "x": 18.0,
+                "y": 0.0,
+                "z": 86.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #G....######.......#\r\nz=017 #.....######.......#\r\nz=016 #.....######.......#\r\nz=015 #..................#\r\nz=014 #.....######.......#\r\nz=013 #.....######.......#\r\nz=012 #.....#########.####\r\nz=011 ###.###########.####\r\nz=010 ###.###########.####\r\nz=009 ###.###########.####\r\nz=008 ###.###########.####\r\nz=007 ###.########.......#\r\nz=006 ###.########.......#\r\nz=005 #.....######.......#\r\nz=004 #..................#\r\nz=003 #.....######.......#\r\nz=002 #.....######.......#\r\nz=001 #.....######......S#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 16,
+            "areaIndex": 3,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 153.0,
+                "y": 0.0,
+                "z": 103.0
+            },
+            "goalPosition": {
+                "x": 136.0,
+                "y": 0.5,
+                "z": 86.0
+            },
+            "finalPosition": {
+                "x": 152.65408325195313,
+                "y": 0.0,
+                "z": 102.06173706054688
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 3,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #......######.....S#\r\nz=017 #......######......#\r\nz=016 #......######......#\r\nz=015 #..................#\r\nz=014 #......######......#\r\nz=013 #......########.####\r\nz=012 #......########.####\r\nz=011 ###.###########.####\r\nz=010 ###.###########.####\r\nz=009 ###.###########.####\r\nz=008 ###.###########.####\r\nz=007 #......########.####\r\nz=006 #......######......#\r\nz=005 #......######......#\r\nz=004 #..................#\r\nz=003 #......######......#\r\nz=002 #......######......#\r\nz=001 #G.....######......#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 17,
+            "areaIndex": 0,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 18.0,
+                "y": 0.0,
+                "z": 1.0
+            },
+            "goalPosition": {
+                "x": 1.0,
+                "y": 0.5,
+                "z": 18.0
+            },
+            "finalPosition": {
+                "x": 16.86667251586914,
+                "y": 0.0,
+                "z": 0.8999999761581421
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 4,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #G......####.......#\r\nz=017 #.......####.......#\r\nz=016 #.......####.......#\r\nz=015 #..................#\r\nz=014 #.......####.......#\r\nz=013 ####.#######.......#\r\nz=012 ####.##########.####\r\nz=011 ####.##########.####\r\nz=010 ####.##########.####\r\nz=009 ####.##########.####\r\nz=008 ####.##########.####\r\nz=007 ####.##########.####\r\nz=006 #.......####.......#\r\nz=005 #.......####.......#\r\nz=004 #.......####.......#\r\nz=003 #..................#\r\nz=002 #.......####.......#\r\nz=001 #.......####......S#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 18,
+            "areaIndex": 1,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 153.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "goalPosition": {
+                "x": 136.0,
+                "y": 0.5,
+                "z": 1.0
+            },
+            "finalPosition": {
+                "x": 153.0,
+                "y": 0.0,
+                "z": 18.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 1,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #.....########....S#\r\nz=017 #.....########.....#\r\nz=016 #.....########.....#\r\nz=015 #..................#\r\nz=014 #.....########.....#\r\nz=013 #.....########.....#\r\nz=012 ###.##########.....#\r\nz=011 ###.############.###\r\nz=010 ###.############.###\r\nz=009 ###.############.###\r\nz=008 ###.############.###\r\nz=007 ###.############.###\r\nz=006 #.....##########.###\r\nz=005 #.....########.....#\r\nz=004 #.....########.....#\r\nz=003 #..................#\r\nz=002 #.....########.....#\r\nz=001 #G....########.....#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 19,
+            "areaIndex": 2,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 18.0,
+                "y": 0.0,
+                "z": 86.0
+            },
+            "goalPosition": {
+                "x": 1.0,
+                "y": 0.5,
+                "z": 103.0
+            },
+            "finalPosition": {
+                "x": 18.0,
+                "y": 0.0,
+                "z": 86.0
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 1,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #G.....#####.......#\r\nz=017 #......#####.......#\r\nz=016 #......#####.......#\r\nz=015 #..................#\r\nz=014 #......#####.......#\r\nz=013 #......#####.......#\r\nz=012 ###.###########.####\r\nz=011 ###.###########.####\r\nz=010 ###.###########.####\r\nz=009 ###.###########.####\r\nz=008 ###.###########.####\r\nz=007 ###.###########.####\r\nz=006 ###.###########.####\r\nz=005 #......#####.......#\r\nz=004 #......#####.......#\r\nz=003 #..................#\r\nz=002 #......#####.......#\r\nz=001 #......#####......S#\r\nz=000 ####################",
+            "trace": []
+        },
+        {
+            "seed": 20,
+            "areaIndex": 3,
+            "agent": "PlayerObject",
+            "layout": "RoomsAndCorridors",
+            "mapWidth": 20,
+            "mapHeight": 20,
+            "waypointCount": 20,
+            "endReason": "StepLimit",
+            "steps": 5000,
+            "spawnPosition": {
+                "x": 153.0,
+                "y": 0.0,
+                "z": 103.0
+            },
+            "goalPosition": {
+                "x": 136.0,
+                "y": 0.5,
+                "z": 86.0
+            },
+            "finalPosition": {
+                "x": 152.62852478027345,
+                "y": 0.0,
+                "z": 102.07157897949219
+            },
+            "finalVelocity": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "visitedCellCount": 2,
+            "map": "Legend: #=wall, .=walkable, S=start, G=goal\r\nRows: z decreases top-to-bottom; columns: x increases left-to-right.\r\nz=019 ####################\r\nz=018 #.......######....S#\r\nz=017 #.......######.....#\r\nz=016 #.......######.....#\r\nz=015 #..................#\r\nz=014 #.......######.....#\r\nz=013 #.......######.....#\r\nz=012 #.......######.....#\r\nz=011 ####.###########.###\r\nz=010 ####.###########.###\r\nz=009 ####.###########.###\r\nz=008 ####.###########.###\r\nz=007 #.......########.###\r\nz=006 #.......########.###\r\nz=005 #.......######.....#\r\nz=004 #..................#\r\nz=003 #.......######.....#\r\nz=002 #.......######.....#\r\nz=001 #G......######.....#\r\nz=000 ####################",
+            "trace": []
+        }
+    ]
+}

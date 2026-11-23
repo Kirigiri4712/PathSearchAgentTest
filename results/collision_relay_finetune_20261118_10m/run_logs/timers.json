@@ -1,0 +1,42 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1794942026",
+        "python_version": "3.10.9 (tags/v3.10.9:1dd9be6, Dec  6 2022, 20:01:21) [MSC v.1934 64 bit (AMD64)]",
+        "command_line_arguments": "C:\\Users\\kirir\\Documents\\Unity\\PathSearchAgentTest\\.venv-mlagents\\Scripts\\mlagents-learn Assets/config/trainer.yaml --run-id=collision_relay_finetune_20261118_10m --initialize-from=visible_tiles_1m_100area_20261115_r2 --torch-device=cuda --base-port=5004",
+        "mlagents_version": "1.1.0",
+        "mlagents_envs_version": "1.1.0",
+        "communication_protocol_version": "1.5.0",
+        "pytorch_version": "2.8.0+cu128",
+        "numpy_version": "1.23.5",
+        "end_time_seconds": "1794942091"
+    },
+    "total": 65.08397019997938,
+    "count": 1,
+    "self": 0.009058300056494772,
+    "children": {
+        "run_training.setup": {
+            "total": 0.21786579996114597,
+            "count": 1,
+            "self": 0.21786579996114597
+        },
+        "TrainerController.start_learning": {
+            "total": 64.85704609996174,
+            "count": 1,
+            "self": 0.0002142000012099743,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 64.85681039997144,
+                    "count": 1,
+                    "self": 64.85681039997144
+                },
+                "TrainerController._save_models": {
+                    "total": 2.1499989088624716e-05,
+                    "count": 1,
+                    "self": 2.1499989088624716e-05
+                }
+            }
+        }
+    }
+}

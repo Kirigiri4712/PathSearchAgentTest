@@ -9,7 +9,7 @@ using UnityEngine;
 public static class TrainingBatchRunner
 {
     private const string ActiveKey = "PathSearch.TrainingBatch.Active";
-    private const string ScenePath = "Assets/Scenes/SampleScene.unity";
+    private const string DefaultScenePath = "Assets/Scenes/SampleScene.unity";
     private const string StopFileName = "stop-visible-tile-training.flag";
     private static bool exitScheduled;
 
@@ -38,12 +38,13 @@ public static class TrainingBatchRunner
                 File.Delete(stopFilePath);
             }
 
-            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            string scenePath = GetScenePath();
+            EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
             LearnManager manager = UnityEngine.Object.FindFirstObjectByType<LearnManager>();
             if (manager == null)
             {
                 throw new InvalidOperationException(
-                    $"No LearnManager was found in {ScenePath}.");
+                    $"No LearnManager was found in {scenePath}.");
             }
             if (manager.IsInferenceTestMode)
             {
@@ -80,6 +81,20 @@ public static class TrainingBatchRunner
         Debug.Log("[TrainingBatchRunner] Stop request received; exiting Unity.");
         EditorApplication.isPlaying = false;
         EditorApplication.delayCall += () => EditorApplication.Exit(0);
+    }
+
+    // Optional "-trainingScene <path>" selects another scene, e.g. a profiling copy.
+    private static string GetScenePath()
+    {
+        string[] args = Environment.GetCommandLineArgs();
+        for (int i = 0; i < args.Length - 1; i++)
+        {
+            if (args[i] == "-trainingScene")
+            {
+                return args[i + 1];
+            }
+        }
+        return DefaultScenePath;
     }
 
     private static string GetStopFilePath()

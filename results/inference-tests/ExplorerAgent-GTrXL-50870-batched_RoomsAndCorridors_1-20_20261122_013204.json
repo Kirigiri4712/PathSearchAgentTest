@@ -1,0 +1,13 @@
+{
+    "model": "Assets/Models/ExplorerAgent-GTrXL-50870-batched.onnx",
+    "layout": "RoomsAndCorridors",
+    "seedMinimum": 1,
+    "seedMaximum": 20,
+    "episodes": 20,
+    "successes": 0,
+    "successRate": 0.0,
+    "parallelAreas": 4,
+    "timeScale": 5.0,
+    "traceEnabled": false,
+    "completedUtc": "2026-11-21T16:32:04.6543713Z"
+}

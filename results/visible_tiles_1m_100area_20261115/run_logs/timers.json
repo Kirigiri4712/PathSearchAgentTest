@@ -1,0 +1,42 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1794724554",
+        "python_version": "3.10.9 (tags/v3.10.9:1dd9be6, Dec  6 2022, 20:01:21) [MSC v.1934 64 bit (AMD64)]",
+        "command_line_arguments": "C:\\Users\\kirir\\Documents\\Unity\\PathSearchAgentTest\\.venv-mlagents\\Scripts\\mlagents-learn Assets/config/trainer.yaml --run-id=visible_tiles_1m_100area_20261115 --torch-device=cuda --num-areas=100 --time-scale=5",
+        "mlagents_version": "1.1.0",
+        "mlagents_envs_version": "1.1.0",
+        "communication_protocol_version": "1.5.0",
+        "pytorch_version": "2.8.0+cu128",
+        "numpy_version": "1.23.5",
+        "end_time_seconds": "1794724619"
+    },
+    "total": 65.10426950000692,
+    "count": 1,
+    "self": 0.008495199959725142,
+    "children": {
+        "run_training.setup": {
+            "total": 0.22024450002936646,
+            "count": 1,
+            "self": 0.22024450002936646
+        },
+        "TrainerController.start_learning": {
+            "total": 64.87552980001783,
+            "count": 1,
+            "self": 0.00016900000628083944,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 64.87533730000723,
+                    "count": 1,
+                    "self": 64.87533730000723
+                },
+                "TrainerController._save_models": {
+                    "total": 2.3500004317611456e-05,
+                    "count": 1,
+                    "self": 2.3500004317611456e-05
+                }
+            }
+        }
+    }
+}
